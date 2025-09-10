@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "12P5f1aG9U4=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\L2Market.Domain.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\GUSTAVO\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.0\\microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

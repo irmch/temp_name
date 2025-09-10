@@ -1,0 +1,10 @@
+﻿  FlunderDLL.cpp
+  injector.cpp
+  pch.cpp
+  Generating Code...
+     Creating library C:\Users\GUSTAVO\Documents\L2Market\x64\Debug\L2Market.Injector.lib and object C:\Users\GUSTAVO\Documents\L2Market\x64\Debug\L2Market.Injector.exp
+  L2Market.Injector.vcxproj -> C:\Users\GUSTAVO\Documents\L2Market\x64\Debug\L2Market.Injector.dll
+  Copying DLL to UI project...
+          1 file(s) copied.
+          1 file(s) copied.
+  DLL copied successfully!

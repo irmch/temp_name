@@ -1,0 +1,324 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\L2Market.UI.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Core\\L2Market.Core.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Core\\L2Market.Core.csproj",
+        "projectName": "L2Market.Core",
+        "projectPath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Core\\L2Market.Core.csproj",
+        "packagesPath": "C:\\Users\\GUSTAVO\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Core\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\GUSTAVO\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\L2Market.Domain.csproj": {
+                "projectPath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\L2Market.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.200"
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[9.0.8, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\L2Market.Domain.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\L2Market.Domain.csproj",
+        "projectName": "L2Market.Domain",
+        "projectPath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\L2Market.Domain.csproj",
+        "packagesPath": "C:\\Users\\GUSTAVO\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\GUSTAVO\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.200"
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Infrastructure\\L2Market.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Infrastructure\\L2Market.Infrastructure.csproj",
+        "projectName": "L2Market.Infrastructure",
+        "projectPath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Infrastructure\\L2Market.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\GUSTAVO\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Infrastructure\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\GUSTAVO\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Core\\L2Market.Core.csproj": {
+                "projectPath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Core\\L2Market.Core.csproj"
+              },
+              "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\L2Market.Domain.csproj": {
+                "projectPath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\L2Market.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.200"
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[9.0.8, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\L2Market.UI.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\L2Market.UI.csproj",
+        "projectName": "L2Market.UI",
+        "projectPath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\L2Market.UI.csproj",
+        "packagesPath": "C:\\Users\\GUSTAVO\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\GUSTAVO\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0-windows"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0-windows7.0": {
+            "targetAlias": "net8.0-windows",
+            "projectReferences": {
+              "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Core\\L2Market.Core.csproj": {
+                "projectPath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Core\\L2Market.Core.csproj"
+              },
+              "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\L2Market.Domain.csproj": {
+                "projectPath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\L2Market.Domain.csproj"
+              },
+              "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Infrastructure\\L2Market.Infrastructure.csproj": {
+                "projectPath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Infrastructure\\L2Market.Infrastructure.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.200"
+      },
+      "frameworks": {
+        "net8.0-windows7.0": {
+          "targetAlias": "net8.0-windows",
+          "dependencies": {
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[9.0.8, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            },
+            "Microsoft.WindowsDesktop.App.WPF": {
+              "privateAssets": "none"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
