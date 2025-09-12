@@ -46,12 +46,83 @@ namespace L2Market.Core.Services
         {
             try
             {
-                await UpdateItemsAsync(evt.Items);
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PrivateStoreService] Updated {evt.Items.Count} items"));
+                // Группируем предметы по типу магазина для специальной обработки
+                var groupedItems = evt.Items.GroupBy(item => item.StoreType).ToList();
+                
+                foreach (var group in groupedItems)
+                {
+                    var storeType = group.Key;
+                    var items = group.ToList();
+                    
+                    if (storeType == 0x01) // Массовая продажа
+                    {
+                        await ProcessBulkSaleItemsAsync(items);
+                    }
+                    else
+                    {
+                        await UpdateItemsAsync(items);
+                    }
+                }
+                
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PrivateStoreService] Updated {evt.Items.Count} items (Bulk: {evt.Items.Count(i => i.StoreType == 0x01)}, Regular: {evt.Items.Count(i => i.StoreType != 0x01)})"));
             }
             catch (Exception ex)
             {
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PrivateStoreService] Error updating items: {ex.Message}"));
+            }
+        }
+
+        /// <summary>
+        /// Обработка предметов массовой продажи
+        /// </summary>
+        private async Task ProcessBulkSaleItemsAsync(IReadOnlyList<PrivateStoreItem> bulkItems)
+        {
+            var currentTime = DateTime.UtcNow;
+            
+            // Группируем предметы по продавцу для массовых продаж
+            var groupedByVendor = bulkItems.GroupBy(item => item.VendorObjectId).ToList();
+            
+            foreach (var vendorGroup in groupedByVendor)
+            {
+                var vendorObjectId = vendorGroup.Key;
+                var vendorItems = vendorGroup.ToList();
+                
+                // Удаляем все старые предметы этого продавца (массовые продажи)
+                var oldKeys = _items
+                    .Where(kvp => GetVendorObjectIdFromKey(kvp.Key) == vendorObjectId && 
+                                 kvp.Value.StoreType == 0x01)
+                    .Select(kvp => kvp.Key)
+                    .ToList();
+                
+                foreach (var key in oldKeys)
+                {
+                    if (_items.TryRemove(key, out var removedItem))
+                    {
+                        // Удаляем из индекса по ID предмета
+                        if (_itemsByItemId.TryGetValue(removedItem.ItemInfo.ItemId, out var itemKeys))
+                        {
+                            itemKeys.Remove(key);
+                            if (itemKeys.Count == 0)
+                            {
+                                _itemsByItemId.TryRemove(removedItem.ItemInfo.ItemId, out _);
+                            }
+                        }
+                    }
+                }
+                
+                // Добавляем новые предметы массовой продажи
+                foreach (var item in vendorItems)
+                {
+                    var key = GenerateItemKey(item);
+                    _items[key] = item;
+                    _itemLastSeen[key] = currentTime;
+                    
+                    // Добавляем в индекс по ID предмета
+                    _itemsByItemId.GetOrAdd(item.ItemInfo.ItemId, _ => new HashSet<string>()).Add(key);
+                }
+                
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent(
+                    $"[PrivateStoreService] Processed bulk sale from vendor {vendorItems.First().VendorName}: {vendorItems.Count} items"));
             }
         }
 

@@ -5,16 +5,16 @@ namespace L2Market.Domain.Entities.ExResponseCommissionListPacket
     /// </summary>
     public class CommissionItem
     {
-        private readonly long _commissionId;
-        private readonly long _pricePerUnit;
+        private readonly ulong _commissionId;
+        private readonly ulong _pricePerUnit;
         private readonly int _commissionItemType;
         private readonly int _durationType;
         private readonly int _endTime;
         private readonly string? _sellerName;
         private readonly ItemInfo _itemInfo;
 
-        public long CommissionId => _commissionId;
-        public long PricePerUnit => _pricePerUnit;
+        public ulong CommissionId => _commissionId;
+        public ulong PricePerUnit => _pricePerUnit;
         public int CommissionItemType => _commissionItemType;
         public int DurationType => _durationType;
         public int EndTime => _endTime;
@@ -22,8 +22,8 @@ namespace L2Market.Domain.Entities.ExResponseCommissionListPacket
         public ItemInfo ItemInfo => _itemInfo;
 
         public CommissionItem(
-            long commissionId,
-            long pricePerUnit,
+            ulong commissionId,
+            ulong pricePerUnit,
             int commissionItemType,
             int durationType,
             int endTime,

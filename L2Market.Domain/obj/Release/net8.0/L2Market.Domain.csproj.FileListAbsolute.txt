@@ -10,3 +10,4 @@ C:\Users\GUSTAVO\Documents\L2Market\L2Market.Domain\obj\Release\net8.0\L2Market.
 C:\Users\GUSTAVO\Documents\L2Market\L2Market.Domain\obj\Release\net8.0\refint\L2Market.Domain.dll
 C:\Users\GUSTAVO\Documents\L2Market\L2Market.Domain\obj\Release\net8.0\L2Market.Domain.pdb
 C:\Users\GUSTAVO\Documents\L2Market\L2Market.Domain\obj\Release\net8.0\ref\L2Market.Domain.dll
+C:\Users\GUSTAVO\Documents\L2Market\L2Market.Domain\obj\Release\net8.0\L2Market.Domain.sourcelink.json

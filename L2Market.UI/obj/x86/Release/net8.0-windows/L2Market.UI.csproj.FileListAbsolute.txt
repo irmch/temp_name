@@ -54,3 +54,4 @@ C:\Users\GUSTAVO\Documents\L2Market\L2Market.UI\bin\x86\Release\net8.0-windows\M
 C:\Users\GUSTAVO\Documents\L2Market\L2Market.UI\bin\x86\Release\net8.0-windows\Configuration\appsettings.json
 C:\Users\GUSTAVO\Documents\L2Market\L2Market.UI\obj\x86\Release\net8.0-windows\Views\MarketWindow.baml
 C:\Users\GUSTAVO\Documents\L2Market\L2Market.UI\obj\x86\Release\net8.0-windows\Views\MarketWindow.g.cs
+C:\Users\GUSTAVO\Documents\L2Market\L2Market.UI\obj\x86\Release\net8.0-windows\L2Market.UI.sourcelink.json

@@ -62,7 +62,47 @@ namespace L2Market.Domain.Models
         public long Price
         {
             get => _price;
-            set { _price = value; OnPropertyChanged(nameof(Price)); }
+            set 
+            { 
+                _price = value; 
+                OnPropertyChanged(nameof(Price));
+                OnPropertyChanged(nameof(FormattedPrice)); // Обновляем форматированную цену
+            }
+        }
+
+        /// <summary>
+        /// Форматированная цена с буквами (B, T)
+        /// </summary>
+        public string FormattedPrice
+        {
+            get
+            {
+                if (_price == 0) return "0";
+                if (_price >= 1000000000000) // Триллионы
+                {
+                    var priceInTrillions = (double)_price / 1000000000000;
+                    return $"{priceInTrillions:F1}T";
+                }
+                else if (_price >= 1000000000) // Миллиарды
+                {
+                    var priceInBillions = (double)_price / 1000000000;
+                    return $"{priceInBillions:F1}B";
+                }
+                else if (_price >= 1000000) // Миллионы
+                {
+                    var priceInMillions = (double)_price / 1000000;
+                    return $"{priceInMillions:F1}M";
+                }
+                else if (_price >= 1000) // Тысячи
+                {
+                    var priceInThousands = (double)_price / 1000;
+                    return $"{priceInThousands:F1}K";
+                }
+                else
+                {
+                    return _price.ToString();
+                }
+            }
         }
 
         public string SellerName
@@ -257,6 +297,7 @@ namespace L2Market.Domain.Models
             set { _durationType = value; OnPropertyChanged(nameof(DurationType)); }
         }
 
+
         public string WorldExchangeId
         {
             get => _worldExchangeId;
@@ -276,7 +317,6 @@ namespace L2Market.Domain.Models
         }
 
         // Форматированные свойства для отображения
-        public string FormattedPrice => FormatPrice(_price);
         public string FormattedEnchantLevel => _enchantLevel > 0 ? $"+{_enchantLevel}" : "";
         public string FormattedLastSeen => _lastSeen.ToString("HH:mm:ss");
         public string StatusIcons => GetStatusIcons();
@@ -371,16 +411,6 @@ namespace L2Market.Domain.Models
             }
         }
 
-        private string FormatPrice(long price)
-        {
-            if (price >= 1_000_000_000)
-                return $"{price / 1_000_000_000.0:F1}B";
-            if (price >= 1_000_000)
-                return $"{price / 1_000_000.0:F1}M";
-            if (price >= 1_000)
-                return $"{price / 1_000.0:F1}K";
-            return price.ToString("N0");
-        }
 
         private string GetStatusIcons()
         {
@@ -416,19 +446,40 @@ namespace L2Market.Domain.Models
             var itemTypeText = L2Market.Domain.Entities.ExPrivateStoreSearchItemPacket.StoreDecoders.DecodeItemType2(item.ItemInfo.ItemType2);
             var bodyPartText = L2Market.Domain.Entities.ExPrivateStoreSearchItemPacket.StoreDecoders.DecodeBodyPart(item.ItemInfo.BodyPart);
             
+            // Определяем иконку и стиль в зависимости от типа магазина
+            string marketTypeIcon = item.StoreType switch
+            {
+                0x00 => "🏪", // Продажа
+                0x01 => "🛒", // Покупка
+                0x03 => "🔄", // Все типы
+                _ => "❓"
+            };
+            
+            // Для покупки добавляем специальную информацию
+            string additionalInfo = item.StoreType == 0x01 
+                ? $"{itemTypeText} | {bodyPartText} | ПОКУПКА | VisualID: {item.ItemInfo.VisualId ?? 0}"
+                : $"{itemTypeText} | {bodyPartText} | VisualID: {item.ItemInfo.VisualId ?? 0}";
+            
+            // Отладочная информация для EnchantEffects
+            System.Diagnostics.Debug.WriteLine($"[FromPrivateStoreItem] ItemId: {item.ItemInfo.ItemId}, EnchantEffects: {item.ItemInfo.EnchantEffects?.Count ?? 0} effects");
+            if (item.ItemInfo.EnchantEffects?.Any() == true)
+            {
+                System.Diagnostics.Debug.WriteLine($"[FromPrivateStoreItem] EnchantEffects: {string.Join(", ", item.ItemInfo.EnchantEffects)}");
+            }
+
             return new MarketItemViewModel
             {
                 ItemName = $"Item {item.ItemInfo.ItemId}",
                 Price = item.Price,
                 SellerName = item.VendorName,
-                MarketType = $"Частный магазин ({storeTypeText})",
+                MarketType = $"{marketTypeIcon} Частный магазин ({storeTypeText})",
                 EnchantLevel = item.ItemInfo.EnchantLevel,
                 HasAugmentation = item.ItemInfo.Augmentation?.Any() == true,
                 HasSoulCrystal = item.ItemInfo.SoulCrystalOptions?.Any() == true,
                 IsBlessed = item.ItemInfo.Blessed == true,
                 LastSeen = DateTime.UtcNow,
                 ItemId = item.ItemInfo.ItemId.ToString(),
-                AdditionalInfo = $"{itemTypeText} | {bodyPartText}",
+                AdditionalInfo = additionalInfo,
                 Count = item.ItemInfo.Count,
                 ItemType2 = item.ItemInfo.ItemType2,
                 BodyPart = item.ItemInfo.BodyPart,
@@ -447,16 +498,43 @@ namespace L2Market.Domain.Models
                 ElementalAttrs = FormatElementalAttrs(item.ItemInfo.ElementalAttrs),
                 EnchantEffects = FormatEnchantEffects(item.ItemInfo.EnchantEffects),
                 ReuseDelay = item.ItemInfo.ReuseDelay ?? 0,
-                VendorObjectId = item.VendorObjectId
+                VendorObjectId = item.VendorObjectId,
+                // Атрибуты атаки и защиты
+                AttackAttribute = FormatAttackAttributeFromElementalAttrs(item.ItemInfo.ElementalAttrs),
+                DefenceAttributes = FormatDefenceAttributesFromElementalAttrs(item.ItemInfo.ElementalAttrs)
             };
         }
 
         public static MarketItemViewModel FromCommissionItem(CommissionItem item)
         {
+            // Отладочное логирование для диагностики
+            // System.Diagnostics.Debug.WriteLine($"[MarketItemViewModel] CommissionItem: ID={item.CommissionId}, Price={item.PricePerUnit}, Count={item.ItemInfo.Count}, BodyPart={item.ItemInfo.BodyPart}");
+            
+            var itemName = $"Item {item.ItemInfo.ItemId}";
+            if (item.ItemInfo.EnchantLevel > 0)
+            {
+                itemName += $"+{item.ItemInfo.EnchantLevel}";
+            }
+            if (item.ItemInfo.Blessed == true)
+            {
+                itemName += " (Blessed)";
+            }
+            if (item.ItemInfo.Augmentation?.Any() == true)
+            {
+                itemName += " (Augmented)";
+            }
+            
+            var price = item.PricePerUnit > (ulong)long.MaxValue ? long.MaxValue : (long)item.PricePerUnit;
+            var count = item.ItemInfo.Count > (ulong)long.MaxValue ? long.MaxValue : (long)item.ItemInfo.Count;
+            var bodyPart = item.ItemInfo.BodyPart > (ulong)long.MaxValue ? long.MaxValue : (long)item.ItemInfo.BodyPart;
+            
+            // Отладочное логирование после конвертации
+            // System.Diagnostics.Debug.WriteLine($"[MarketItemViewModel] Converted: Price={price}, Count={count}, BodyPart={bodyPart}");
+            
             return new MarketItemViewModel
             {
-                ItemName = $"Item {item.ItemInfo.ItemId}",
-                Price = item.PricePerUnit,
+                ItemName = itemName,
+                Price = price, // Безопасная конвертация ulong в long
                 SellerName = item.SellerName ?? "Неизвестно",
                 MarketType = "Комиссия",
                 EnchantLevel = item.ItemInfo.EnchantLevel,
@@ -465,15 +543,16 @@ namespace L2Market.Domain.Models
                 IsBlessed = item.ItemInfo.Blessed == true,
                 LastSeen = DateTime.UtcNow,
                 ItemId = item.ItemInfo.ItemId.ToString(),
-                AdditionalInfo = $"ID комиссии: {item.CommissionId}",
-                Count = item.ItemInfo.Count,
+                AdditionalInfo = $"ID комиссии: {item.CommissionId} | Тип: {DecodeCommissionType(item.CommissionItemType)} | Длительность: {DecodeDurationType(item.DurationType)} | VisualID: {item.ItemInfo.VisualId ?? 0}",
+                Count = count, // Безопасная конвертация ulong в long
                 ItemType2 = item.ItemInfo.ItemType2,
-                BodyPart = item.ItemInfo.BodyPart,
+                BodyPart = bodyPart, // Безопасная конвертация ulong в long
                 Mana = item.ItemInfo.Mana,
                 Time = item.ItemInfo.Time,
                 Available = item.ItemInfo.Available,
                 VisualId = item.ItemInfo.VisualId ?? 0,
                 EndTime = FormatEndTime(item.EndTime),
+                Coordinates = "Комиссия", // Комиссия не имеет координат
                 SoulCrystalInfo = FormatSoulCrystalInfo(item.ItemInfo.SoulCrystalOptions, item.ItemInfo.SoulCrystalSpecialOptions),
                 // Новые поля
                 ObjectId = item.ItemInfo.ObjectId,
@@ -486,35 +565,72 @@ namespace L2Market.Domain.Models
                 ReuseDelay = item.ItemInfo.ReuseDelay ?? 0,
                 CommissionId = item.CommissionId.ToString(),
                 CommissionType = DecodeCommissionType(item.CommissionItemType),
-                DurationType = DecodeDurationType(item.DurationType)
+                DurationType = DecodeDurationType(item.DurationType),
+                // Атрибуты атаки и защиты
+                AttackAttribute = FormatAttackAttributeFromElementalAttrs(item.ItemInfo.ElementalAttrs),
+                DefenceAttributes = FormatDefenceAttributesFromElementalAttrs(item.ItemInfo.ElementalAttrs)
             };
         }
 
         public static MarketItemViewModel FromWorldExchangeItem(WorldExchangeItemInfo item)
         {
+            // Создаем элементарные атрибуты для World Exchange
+            var elementalAttrs = new Dictionary<string, int>
+            {
+                ["attack_type"] = item.AttackAttributeType,
+                ["attack_power"] = item.AttackAttributeValue,
+                ["defense_fire"] = item.DefenceFire,
+                ["defense_water"] = item.DefenceWater,
+                ["defense_wind"] = item.DefenceWind,
+                ["defense_earth"] = item.DefenceEarth,
+                ["defense_holy"] = item.DefenceHoly,
+                ["defense_dark"] = item.DefenceDark
+            };
+
+            // Создаем аугментацию для World Exchange
+            var augmentation = new Dictionary<string, int>();
+            if (item.AugmentationOption1 != 0 || item.AugmentationOption2 != 0)
+            {
+                augmentation["option1"] = item.AugmentationOption1;
+                augmentation["option2"] = item.AugmentationOption2;
+            }
+
+            // Создаем эффекты зачарования для World Exchange
+            var enchantEffects = new List<int>();
+            if (item.EnchantLevel > 0)
+            {
+                enchantEffects.Add(item.EnchantLevel);
+            }
+
             return new MarketItemViewModel
             {
                 ItemName = $"Item {item.ItemId}",
                 Price = (long)item.Price,
                 SellerName = "Мировой обмен",
-                MarketType = "Мировой обмен",
+                MarketType = "🌍 Мировой обмен",
                 EnchantLevel = item.EnchantLevel,
                 HasAugmentation = item.AugmentationOption1 != 0 || item.AugmentationOption2 != 0,
                 HasSoulCrystal = item.SoulCrystalOption1 != 0 || item.SoulCrystalOption2 != 0,
                 IsBlessed = item.IsBlessed != 0,
                 LastSeen = DateTime.UtcNow,
                 ItemId = item.ItemId.ToString(),
-                AdditionalInfo = $"ID обмена: {item.WorldExchangeId}",
+                AdditionalInfo = $"ID обмена: {item.WorldExchangeId} | VisualID: {item.VisualId}",
                 Count = (long)item.Count,
                 VisualId = item.VisualId,
                 EndTime = FormatEndTime(item.EndTime),
-                AttackAttribute = FormatAttackAttribute(item.AttackAttributeType, item.AttackAttributeValue),
-                DefenceAttributes = FormatDefenceAttributes(item.DefenceFire, item.DefenceWater, item.DefenceWind, 
-                    item.DefenceEarth, item.DefenceHoly, item.DefenceDark),
+                Coordinates = "Мировой обмен", // World Exchange не имеет координат
                 SoulCrystalInfo = FormatWorldExchangeSoulCrystal(item.SoulCrystalOption1, item.SoulCrystalOption2, item.SoulCrystalSpecialOption),
                 // Новые поля
+                ObjectId = 0, // World Exchange не имеет ObjectId
                 WorldExchangeId = item.WorldExchangeId.ToString(),
-                UnknownField = item.UnknownField
+                UnknownField = item.UnknownField,
+                // Элементарные атрибуты и аугментация
+                ElementalAttrs = FormatElementalAttrs(elementalAttrs),
+                AugmentationInfo = FormatAugmentationInfo(augmentation),
+                EnchantEffects = FormatEnchantEffects(enchantEffects),
+                // Атрибуты атаки и защиты
+                AttackAttribute = FormatAttackAttributeFromElementalAttrs(elementalAttrs),
+                DefenceAttributes = FormatDefenceAttributesFromElementalAttrs(elementalAttrs)
             };
         }
 
@@ -564,19 +680,121 @@ namespace L2Market.Domain.Models
         private static string FormatAugmentationInfo(Dictionary<string, int>? augmentation)
         {
             if (augmentation?.Any() != true) return "";
-            return string.Join(", ", augmentation.Select(kvp => $"{kvp.Key}:{kvp.Value}"));
+            return $"💎 {string.Join(", ", augmentation.Select(kvp => $"{kvp.Key}:{kvp.Value}"))}";
         }
 
         private static string FormatElementalAttrs(Dictionary<string, int>? elementalAttrs)
         {
             if (elementalAttrs?.Any() != true) return "";
-            return string.Join(", ", elementalAttrs.Select(kvp => $"{kvp.Key}:{kvp.Value}"));
+            
+            var result = new List<string>();
+            
+            // Атрибуты атаки (для оружия)
+            if (elementalAttrs.ContainsKey("attack_type") && elementalAttrs.ContainsKey("attack_power"))
+            {
+                var attackType = elementalAttrs["attack_type"];
+                var attackPower = elementalAttrs["attack_power"];
+                if (attackPower > 0) // Показываем только если есть атака
+                {
+                    var elementName = GetElementName(attackType);
+                    result.Add($"⚔️ {elementName}: {attackPower}");
+                }
+            }
+            
+            // Атрибуты защиты (для брони)
+            var defenseAttrs = new[] { 
+                ("defense_fire", "🔥 Огонь"), 
+                ("defense_water", "💧 Вода"), 
+                ("defense_wind", "💨 Ветер"), 
+                ("defense_earth", "🌍 Земля"), 
+                ("defense_holy", "✨ Свет"), 
+                ("defense_dark", "🌑 Тьма") 
+            };
+            
+            var defenseValues = new List<string>();
+            foreach (var (attr, name) in defenseAttrs)
+            {
+                if (elementalAttrs.ContainsKey(attr) && elementalAttrs[attr] > 0)
+                {
+                    defenseValues.Add($"{name}: {elementalAttrs[attr]}");
+                }
+            }
+            
+            if (defenseValues.Any())
+            {
+                result.Add($"🛡️ {string.Join(", ", defenseValues)}");
+            }
+            
+            return string.Join(" | ", result);
+        }
+
+        private static string GetElementName(int elementType)
+        {
+            return elementType switch
+            {
+                -2 => "Нет атрибута",
+                0 => "🔥 Огонь",
+                1 => "💧 Вода", 
+                2 => "💨 Ветер",
+                3 => "🌍 Земля",
+                4 => "✨ Свет",
+                5 => "🌑 Тьма",
+                _ => $"Неизвестный ({elementType})"
+            };
         }
 
         private static string FormatEnchantEffects(List<int>? enchantEffects)
         {
             if (enchantEffects?.Any() != true) return "";
-            return string.Join(", ", enchantEffects);
+            
+            // Отладочная информация
+            System.Diagnostics.Debug.WriteLine($"[FormatEnchantEffects] Effects: {string.Join(", ", enchantEffects)}");
+            
+            return $"⚡ {string.Join(", ", enchantEffects)}";
+        }
+
+        private static string FormatAttackAttributeFromElementalAttrs(Dictionary<string, int>? elementalAttrs)
+        {
+            if (elementalAttrs?.ContainsKey("attack_type") != true || elementalAttrs?.ContainsKey("attack_power") != true)
+                return "";
+            
+            var attackType = elementalAttrs["attack_type"];
+            var attackPower = elementalAttrs["attack_power"];
+            
+            if (attackPower <= 0) return "";
+            
+            var elementName = GetElementName(attackType);
+            return $"⚔️ {elementName}: {attackPower}";
+        }
+
+        private static string FormatDefenceAttributesFromElementalAttrs(Dictionary<string, int>? elementalAttrs)
+        {
+            if (elementalAttrs == null) return "";
+            
+            var defenseAttrs = new[] { 
+                ("defense_fire", "🔥 Огонь"), 
+                ("defense_water", "💧 Вода"), 
+                ("defense_wind", "💨 Ветер"), 
+                ("defense_earth", "🌍 Земля"), 
+                ("defense_holy", "✨ Свет"), 
+                ("defense_dark", "🌑 Тьма") 
+            };
+            
+            var defenseValues = new List<string>();
+            foreach (var (attr, name) in defenseAttrs)
+            {
+                if (elementalAttrs.ContainsKey(attr) && elementalAttrs[attr] > 0)
+                {
+                    defenseValues.Add($"{name}: {elementalAttrs[attr]}");
+                }
+            }
+            
+            if (defenseValues.Any())
+            {
+                return $"🛡️ {string.Join(", ", defenseValues)}";
+            }
+            
+            return "";
         }
 
         private static string DecodeCommissionType(int commissionItemType)

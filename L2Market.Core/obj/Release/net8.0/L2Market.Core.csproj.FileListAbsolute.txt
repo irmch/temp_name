@@ -14,3 +14,4 @@ C:\Users\GUSTAVO\Documents\L2Market\L2Market.Core\obj\Release\net8.0\refint\L2Ma
 C:\Users\GUSTAVO\Documents\L2Market\L2Market.Core\obj\Release\net8.0\L2Market.Core.pdb
 C:\Users\GUSTAVO\Documents\L2Market\L2Market.Core\obj\Release\net8.0\ref\L2Market.Core.dll
 C:\Users\GUSTAVO\Documents\L2Market\L2Market.Core\bin\Release\net8.0\Configuration\appsettings.json
+C:\Users\GUSTAVO\Documents\L2Market\L2Market.Core\obj\Release\net8.0\L2Market.Core.sourcelink.json

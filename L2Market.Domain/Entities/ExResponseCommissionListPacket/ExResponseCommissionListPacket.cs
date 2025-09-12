@@ -83,15 +83,26 @@ namespace L2Market.Domain.Entities.ExResponseCommissionListPacket
 
         private static CommissionItem ReadCommissionItem(BinaryReader reader)
         {
-            // Читаем поля CommissionItem
-            long commissionId = reader.ReadInt64();
-            long pricePerUnit = reader.ReadInt64();
+            // Читаем поля CommissionItem (используем unsigned для больших значений)
+            ulong commissionId = reader.ReadUInt64();
+            ulong pricePerUnit = reader.ReadUInt64();
             int commissionItemType = reader.ReadInt32();
             int durationType = reader.ReadInt32();
             int endTime = reader.ReadInt32();
+            
+            // Отладочное логирование - показываем исходную цену
+            // System.Diagnostics.Debug.WriteLine($"[CommissionItem] Raw data: commissionId={commissionId} (0x{commissionId:X16}), pricePerUnit={pricePerUnit} (0x{pricePerUnit:X16}), commissionItemType={commissionItemType}, durationType={durationType}, endTime={endTime}");
+            
+            // Убираем ограничение на цену - пусть приходят любые значения из игры
+            // if (pricePerUnit > 1000000000000000) 
+            // {
+            //     pricePerUnit = 0; 
+            // }
+            
 
             // Читаем имя продавца (null-terminated string)
             string? sellerName = ReadNullString(reader);
+            // System.Diagnostics.Debug.WriteLine($"[CommissionItem] Seller name: '{sellerName}'");
 
             // Читаем ItemInfo
             var itemInfo = ReadItemInfo(reader);
@@ -114,17 +125,39 @@ namespace L2Market.Domain.Entities.ExResponseCommissionListPacket
             int objectId = reader.ReadInt32();
             int itemId = reader.ReadInt32();
             byte location = reader.ReadByte();
-            long count = reader.ReadInt64();
+            ulong count = reader.ReadUInt64(); // Используем unsigned для количества
             byte itemType2 = reader.ReadByte();
             byte customType1 = reader.ReadByte();
             ushort equipped = reader.ReadUInt16();
-            long bodyPart = reader.ReadInt64();
+            ulong bodyPart = reader.ReadUInt64(); // Используем unsigned для body part
             ushort enchantLevel = reader.ReadUInt16();
             int mana = reader.ReadInt32();
             byte protocol270 = reader.ReadByte();
             int timeValue = reader.ReadInt32();
             bool available = reader.ReadByte() != 0;
             ushort locked = reader.ReadUInt16();
+            
+            // Отладочное логирование
+            // System.Diagnostics.Debug.WriteLine($"[ItemInfo] Raw data: itemId={itemId}, count={count} (0x{count:X16}), enchantLevel={enchantLevel}, mask=0x{mask:X4}, bodyPart={bodyPart} (0x{bodyPart:X16})");
+            
+            // Проверяем на разумные значения
+            if (itemId < 0)
+            {
+                // System.Diagnostics.Debug.WriteLine($"[ItemInfo] Negative itemId: {itemId}, taking absolute value");
+                itemId = Math.Abs(itemId);
+            }
+            
+            if (count > 1000000) // Максимум 1 миллион
+            {
+                // System.Diagnostics.Debug.WriteLine($"[ItemInfo] Count out of range: {count}, setting to 1");
+                count = 1; // Минимум 1 предмет
+            }
+            
+            if (enchantLevel > 100) // Максимум +100
+            {
+                // System.Diagnostics.Debug.WriteLine($"[ItemInfo] EnchantLevel out of range: {enchantLevel}, setting to 0");
+                enchantLevel = 0; // Сбрасываем неразумные значения
+            }
 
             // Создаем базовый ItemInfo
             var itemInfo = new ItemInfo(
@@ -167,16 +200,23 @@ namespace L2Market.Domain.Entities.ExResponseCommissionListPacket
                 short attackType = reader.ReadInt16();
                 short attackPower = reader.ReadInt16();
                 
-                // Пропускаем защиты (6 значений по 2 байта)
+                // Читаем атрибуты защиты (6 значений по 2 байта)
+                short[] defenseAttrs = new short[6];
                 for (int i = 0; i < 6; i++)
                 {
-                    reader.ReadInt16();
+                    defenseAttrs[i] = reader.ReadInt16();
                 }
 
                 var elementalAttrs = new Dictionary<string, int>
                 {
                     ["attack_type"] = attackType,
-                    ["attack_power"] = attackPower
+                    ["attack_power"] = attackPower,
+                    ["defense_fire"] = defenseAttrs[0],
+                    ["defense_water"] = defenseAttrs[1],
+                    ["defense_wind"] = defenseAttrs[2],
+                    ["defense_earth"] = defenseAttrs[3],
+                    ["defense_holy"] = defenseAttrs[4],
+                    ["defense_unholy"] = defenseAttrs[5]
                 };
                 itemInfo = new ItemInfo(
                     mask, objectId, itemId, location, count, itemType2, customType1,
@@ -232,6 +272,10 @@ namespace L2Market.Domain.Entities.ExResponseCommissionListPacket
         {
             try
             {
+                // Проверяем, есть ли данные для чтения
+                if (reader.BaseStream.Position + 2 > reader.BaseStream.Length)
+                    return null;
+                
                 // Java writeString(null) записывает только writeChar('\000') - 2 байта
                 ushort charValue = reader.ReadUInt16();
                 
@@ -241,7 +285,7 @@ namespace L2Market.Domain.Entities.ExResponseCommissionListPacket
                 }
                 else
                 {
-                    // Читаем строку до терминатора
+                    // Читаем строку до терминатора (UTF-16LE)
                     var chars = new List<char>();
                     chars.Add((char)charValue);
                     
@@ -251,11 +295,11 @@ namespace L2Market.Domain.Entities.ExResponseCommissionListPacket
                         if (reader.BaseStream.Position + 2 > reader.BaseStream.Length)
                             break;
                             
-                        charValue = reader.ReadUInt16();
-                        if (charValue == 0)
+                        ushort nextChar = reader.ReadUInt16();
+                        if (nextChar == 0)
                             break;
                             
-                        chars.Add((char)charValue);
+                        chars.Add((char)nextChar);
                         charCount++;
                     }
                     return new string(chars.ToArray());

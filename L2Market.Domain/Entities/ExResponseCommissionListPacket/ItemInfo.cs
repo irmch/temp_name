@@ -11,11 +11,11 @@ namespace L2Market.Domain.Entities.ExResponseCommissionListPacket
         private readonly int _objectId;
         private readonly int _itemId;
         private readonly int _location;
-        private readonly long _count;
+        private readonly ulong _count;
         private readonly int _itemType2;
         private readonly int _customType1;
         private readonly int _equipped;
-        private readonly long _bodyPart;
+        private readonly ulong _bodyPart;
         private readonly int _enchantLevel;
         private readonly int _mana;
         private readonly int _time;
@@ -35,11 +35,11 @@ namespace L2Market.Domain.Entities.ExResponseCommissionListPacket
         public int ObjectId => _objectId;
         public int ItemId => _itemId;
         public int Location => _location;
-        public long Count => _count;
+        public ulong Count => _count;
         public int ItemType2 => _itemType2;
         public int CustomType1 => _customType1;
         public int Equipped => _equipped;
-        public long BodyPart => _bodyPart;
+        public ulong BodyPart => _bodyPart;
         public int EnchantLevel => _enchantLevel;
         public int Mana => _mana;
         public int Time => _time;
@@ -60,11 +60,11 @@ namespace L2Market.Domain.Entities.ExResponseCommissionListPacket
             int objectId,
             int itemId,
             int location,
-            long count,
+            ulong count,
             int itemType2,
             int customType1,
             int equipped,
-            long bodyPart,
+            ulong bodyPart,
             int enchantLevel,
             int mana,
             int time,

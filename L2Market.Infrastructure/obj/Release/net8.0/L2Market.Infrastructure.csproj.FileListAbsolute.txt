@@ -16,3 +16,4 @@ C:\Users\GUSTAVO\Documents\L2Market\L2Market.Infrastructure\obj\Release\net8.0\r
 C:\Users\GUSTAVO\Documents\L2Market\L2Market.Infrastructure\obj\Release\net8.0\L2Market.Infrastructure.pdb
 C:\Users\GUSTAVO\Documents\L2Market\L2Market.Infrastructure\obj\Release\net8.0\ref\L2Market.Infrastructure.dll
 C:\Users\GUSTAVO\Documents\L2Market\L2Market.Infrastructure\bin\Release\net8.0\Configuration\appsettings.json
+C:\Users\GUSTAVO\Documents\L2Market\L2Market.Infrastructure\obj\Release\net8.0\L2Market.Infrastructure.sourcelink.json

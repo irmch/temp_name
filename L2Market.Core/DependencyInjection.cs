@@ -29,7 +29,10 @@ namespace L2Market.Core
             // Register tracking services
             services.AddSingleton<TrackingService>();
             services.AddSingleton<NotificationService>();
-            services.AddSingleton<AutoBuyService>();
+            services.AddSingleton<MarketQueryService>();
+            
+            // Register command service
+            services.AddScoped<ICommandService, CommandService>();
             
             // All event handling is done via subscriptions, not DI handlers
             

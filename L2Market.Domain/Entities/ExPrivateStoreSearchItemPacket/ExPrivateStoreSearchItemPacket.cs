@@ -36,7 +36,7 @@ public class ExPrivateStoreSearchItemPacket
         using var stream = new MemoryStream(data);
         using var reader = new BinaryReader(stream);
 
-        // Читаем основные поля пакета
+        // Читаем основные поля пакета (данные уже без заголовка)
         int page = reader.ReadByte();
         int maxPage = reader.ReadByte();
         int nSize = reader.ReadInt32();
@@ -53,10 +53,10 @@ public class ExPrivateStoreSearchItemPacket
                     var item = ReadPrivateStoreItem(reader);
                     items.Add(item);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     // Логируем ошибку и продолжаем чтение
-                    // Можно добавить логирование здесь
+                    System.Diagnostics.Debug.WriteLine($"Error reading item {i + 1}/{nSize}: {ex.Message}");
                     break;
                 }
             }
@@ -79,8 +79,13 @@ public class ExPrivateStoreSearchItemPacket
         // Читаем размер данных предмета
         int itemSize = reader.ReadInt32();
 
+        // Создаем подпоток для ItemInfo с ограниченным размером
+        byte[] itemData = reader.ReadBytes(itemSize);
+        using var itemStream = new MemoryStream(itemData);
+        using var itemReader = new BinaryReader(itemStream);
+
         // Читаем ItemInfo
-        var itemInfo = ReadItemInfo(reader, itemSize);
+        var itemInfo = ReadItemInfo(itemReader, itemSize);
 
         return new PrivateStoreItem(
             vendorName,
@@ -96,6 +101,7 @@ public class ExPrivateStoreSearchItemPacket
     private static ItemInfo ReadItemInfo(BinaryReader reader, int itemSize)
     {
         long startPosition = reader.BaseStream.Position;
+        long streamLength = reader.BaseStream.Length;
 
         // Читаем основные поля предмета
         int mask = reader.ReadUInt16();
@@ -164,16 +170,23 @@ public class ExPrivateStoreSearchItemPacket
             short attackType = reader.ReadInt16();
             short attackPower = reader.ReadInt16();
 
-            // Пропускаем защиты (6 значений по 2 байта)
+            // Читаем защиты (6 значений по 2 байта)
+            var defenses = new List<short>();
             for (int i = 0; i < 6; i++)
             {
-                reader.ReadInt16();
+                defenses.Add(reader.ReadInt16());
             }
 
             var elementalAttrs = new Dictionary<string, int>
             {
-                ["attackType"] = attackType,
-                ["attackPower"] = attackPower
+                ["attack_type"] = attackType,
+                ["attack_power"] = attackPower,
+                ["defense_fire"] = defenses[0],
+                ["defense_water"] = defenses[1],
+                ["defense_wind"] = defenses[2],
+                ["defense_earth"] = defenses[3],
+                ["defense_holy"] = defenses[4],
+                ["defense_dark"] = defenses[5]
             };
 
             // Создаем новый ItemInfo с элементарными атрибутами
@@ -260,12 +273,115 @@ public class ExPrivateStoreSearchItemPacket
                 specialOptions);
         }
 
+        if ((mask & ItemListType.ReuseDelay) != 0)
+        {
+            int reuseDelay = reader.ReadInt32();
+
+            // Создаем новый ItemInfo с reuse delay
+            itemInfo = new ItemInfo(
+                itemInfo.Mask,
+                itemInfo.ObjectId,
+                itemInfo.ItemId,
+                itemInfo.Location,
+                itemInfo.Count,
+                itemInfo.ItemType2,
+                itemInfo.CustomType1,
+                itemInfo.Equipped,
+                itemInfo.BodyPart,
+                itemInfo.EnchantLevel,
+                itemInfo.Mana,
+                itemInfo.Time,
+                itemInfo.Available,
+                itemInfo.Augmentation,
+                itemInfo.ElementalAttrs,
+                itemInfo.VisualId,
+                itemInfo.SoulCrystalOptions,
+                itemInfo.SoulCrystalSpecialOptions,
+                itemInfo.EnchantEffects,
+                reuseDelay,
+                itemInfo.Blessed);
+        }
+
+        if ((mask & ItemListType.EnchantEffect) != 0)
+        {
+            // Читаем количество эффектов зачарования
+            byte effectCount = reader.ReadByte();
+            System.Diagnostics.Debug.WriteLine($"[ReadItemInfo] EnchantEffect mask found, effectCount: {effectCount}");
+            var enchantEffects = new List<int>();
+            for (int i = 0; i < effectCount; i++)
+            {
+                int effect = reader.ReadInt32();
+                enchantEffects.Add(effect);
+                System.Diagnostics.Debug.WriteLine($"[ReadItemInfo] EnchantEffect {i}: {effect}");
+            }
+
+            // Создаем новый ItemInfo с эффектами зачарования
+            itemInfo = new ItemInfo(
+                itemInfo.Mask,
+                itemInfo.ObjectId,
+                itemInfo.ItemId,
+                itemInfo.Location,
+                itemInfo.Count,
+                itemInfo.ItemType2,
+                itemInfo.CustomType1,
+                itemInfo.Equipped,
+                itemInfo.BodyPart,
+                itemInfo.EnchantLevel,
+                itemInfo.Mana,
+                itemInfo.Time,
+                itemInfo.Available,
+                itemInfo.Augmentation,
+                itemInfo.ElementalAttrs,
+                itemInfo.VisualId,
+                itemInfo.SoulCrystalOptions,
+                itemInfo.SoulCrystalSpecialOptions,
+                enchantEffects,
+                itemInfo.ReuseDelay,
+                itemInfo.Blessed);
+        }
+
+        if ((mask & ItemListType.Blessed) != 0)
+        {
+            bool blessed = reader.ReadByte() != 0;
+
+            // Создаем новый ItemInfo с blessed статусом
+            itemInfo = new ItemInfo(
+                itemInfo.Mask,
+                itemInfo.ObjectId,
+                itemInfo.ItemId,
+                itemInfo.Location,
+                itemInfo.Count,
+                itemInfo.ItemType2,
+                itemInfo.CustomType1,
+                itemInfo.Equipped,
+                itemInfo.BodyPart,
+                itemInfo.EnchantLevel,
+                itemInfo.Mana,
+                itemInfo.Time,
+                itemInfo.Available,
+                itemInfo.Augmentation,
+                itemInfo.ElementalAttrs,
+                itemInfo.VisualId,
+                itemInfo.SoulCrystalOptions,
+                itemInfo.SoulCrystalSpecialOptions,
+                itemInfo.EnchantEffects,
+                itemInfo.ReuseDelay,
+                blessed);
+        }
+
         // Проверяем, что мы не вышли за пределы размера
         long currentPosition = reader.BaseStream.Position;
         long readBytes = currentPosition - startPosition;
         if (readBytes > itemSize)
         {
             throw new InvalidDataException($"Read more bytes than expected: {readBytes} > {itemSize}");
+        }
+        
+        // Проверяем, что мы прочитали все данные ItemInfo
+        if (currentPosition != streamLength)
+        {
+            // Это предупреждение, а не ошибка - некоторые поля могут отсутствовать
+            // System.Diagnostics.Debug.WriteLine($"Warning: read {currentPosition} of {streamLength} bytes in ItemInfo");
         }
 
         return itemInfo;

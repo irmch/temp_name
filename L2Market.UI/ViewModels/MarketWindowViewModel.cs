@@ -7,6 +7,7 @@ using System.Windows.Input;
 using L2Market.Domain.Models;
 using L2Market.Core.Services;
 using L2Market.Domain.Common;
+using L2Market.Domain.Events;
 
 namespace L2Market.UI.ViewModels
 {
@@ -18,7 +19,7 @@ namespace L2Market.UI.ViewModels
         private readonly TrackingService _trackingService;
         private readonly MarketManagerService _marketManager;
         private readonly NotificationService _notificationService;
-        private readonly AutoBuyService _autoBuyService;
+        private readonly MarketQueryService _marketQueryService;
         private readonly IEventBus _eventBus;
 
         private MarketType _selectedMarketType = MarketType.All;
@@ -27,18 +28,23 @@ namespace L2Market.UI.ViewModels
         private int _totalItems;
         private int _activeRules;
         private string _lastUpdateTime = "Никогда";
+        
+        // Свойства для галочек отслеживания
+        private bool _isPrivateStoreTrackingEnabled;
+        private bool _isCommissionTrackingEnabled;
+        private bool _isWorldExchangeTrackingEnabled;
 
         public MarketWindowViewModel(
             TrackingService trackingService,
             MarketManagerService marketManager,
             NotificationService notificationService,
-            AutoBuyService autoBuyService,
+            MarketQueryService marketQueryService,
             IEventBus eventBus)
         {
             _trackingService = trackingService ?? throw new ArgumentNullException(nameof(trackingService));
             _marketManager = marketManager ?? throw new ArgumentNullException(nameof(marketManager));
             _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
-            _autoBuyService = autoBuyService ?? throw new ArgumentNullException(nameof(autoBuyService));
+            _marketQueryService = marketQueryService ?? throw new ArgumentNullException(nameof(marketQueryService));
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
 
             // Инициализация коллекций
@@ -54,7 +60,6 @@ namespace L2Market.UI.ViewModels
 
             // Подписка на события
             _trackingService.ItemMatchFound += OnItemMatchFound;
-            _trackingService.AutoBuyTriggered += OnAutoBuyTriggered;
             
             // Подписка на события обновления рынка для автоматического обновления UI
             _eventBus.Subscribe<PrivateStoreUpdatedEvent>(OnPrivateStoreUpdated);
@@ -81,7 +86,7 @@ namespace L2Market.UI.ViewModels
             get => _selectedMarketType;
             set
             {
-                System.Diagnostics.Debug.WriteLine($"[MarketWindowViewModel] SelectedMarketType changed from {_selectedMarketType} to {value}");
+                _ = Task.Run(async () => await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MarketWindowViewModel] SelectedMarketType changed from {_selectedMarketType} to {value}")));
                 _selectedMarketType = value;
                 OnPropertyChanged(nameof(SelectedMarketType));
                 _ = Task.Run(async () => await RefreshAsync());
@@ -129,7 +134,6 @@ namespace L2Market.UI.ViewModels
             }
         }
 
-        public string AvailableMoney => _autoBuyService.GetFormattedMoney();
 
         public string LastUpdateTime
         {
@@ -138,6 +142,40 @@ namespace L2Market.UI.ViewModels
             {
                 _lastUpdateTime = value;
                 OnPropertyChanged(nameof(LastUpdateTime));
+            }
+        }
+
+        // Свойства для галочек отслеживания
+        public bool IsPrivateStoreTrackingEnabled
+        {
+            get => _isPrivateStoreTrackingEnabled;
+            set
+            {
+                _isPrivateStoreTrackingEnabled = value;
+                OnPropertyChanged(nameof(IsPrivateStoreTrackingEnabled));
+                ToggleTracking(MarketType.PrivateStore, value);
+            }
+        }
+
+        public bool IsCommissionTrackingEnabled
+        {
+            get => _isCommissionTrackingEnabled;
+            set
+            {
+                _isCommissionTrackingEnabled = value;
+                OnPropertyChanged(nameof(IsCommissionTrackingEnabled));
+                ToggleTracking(MarketType.Commission, value);
+            }
+        }
+
+        public bool IsWorldExchangeTrackingEnabled
+        {
+            get => _isWorldExchangeTrackingEnabled;
+            set
+            {
+                _isWorldExchangeTrackingEnabled = value;
+                OnPropertyChanged(nameof(IsWorldExchangeTrackingEnabled));
+                ToggleTracking(MarketType.WorldExchange, value);
             }
         }
 
@@ -159,37 +197,41 @@ namespace L2Market.UI.ViewModels
             catch (Exception ex)
             {
                 // Логирование ошибки
-                System.Diagnostics.Debug.WriteLine($"Error loading data: {ex.Message}");
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"Error loading data: {ex.Message}"));
             }
         }
 
         public async Task RefreshAsync()
         {
-            System.Diagnostics.Debug.WriteLine($"[MarketWindowViewModel] RefreshAsync started");
+            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MarketWindowViewModel] RefreshAsync started"));
             IsRefreshing = true;
             try
             {
                 // Получаем данные в зависимости от выбранного типа рынка
                 var items = await GetMarketItemsAsync();
-                System.Diagnostics.Debug.WriteLine($"[MarketWindowViewModel] Got {items.Length} items from market");
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MarketWindowViewModel] Got {items.Length} items from market"));
                 
                 // Проверяем, есть ли данные для отображения
                 if (items.Length == 0)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[MarketWindowViewModel] No items to display, skipping UI update");
+                    await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MarketWindowViewModel] No items to display, skipping UI update"));
                     return;
                 }
                 
                 // Обновляем UI в главном потоке
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
+                    // Очищаем коллекцию перед добавлением новых предметов
+                    MarketItems.Clear();
+                    
+                    // Добавляем новые предметы
                     foreach (var item in items)
                     {
                         MarketItems.Add(item);
                     }
                     TotalItems = MarketItems.Count;
                     LastUpdateTime = DateTime.Now.ToString("HH:mm:ss");
-                    System.Diagnostics.Debug.WriteLine($"[MarketWindowViewModel] UI updated with {MarketItems.Count} items");
+                    // System.Diagnostics.Debug.WriteLine($"[MarketWindowViewModel] UI updated with {MarketItems.Count} items");
                 });
             }
             finally
@@ -200,13 +242,7 @@ namespace L2Market.UI.ViewModels
 
         private async Task<MarketItemViewModel[]> GetMarketItemsAsync()
         {
-            System.Diagnostics.Debug.WriteLine($"[MarketWindowViewModel] GetMarketItemsAsync called with SelectedMarketType: {SelectedMarketType}");
-            
-            // Очищаем коллекцию в начале
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                MarketItems.Clear();
-            });
+            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MarketWindowViewModel] GetMarketItemsAsync called with SelectedMarketType: {SelectedMarketType}"));
             
             var items = new List<MarketItemViewModel>();
 
@@ -216,7 +252,7 @@ namespace L2Market.UI.ViewModels
                 var privateStoreViewModels = privateStoreItems.Cast<object>().Select(item => 
                     MarketItemViewModel.FromPrivateStoreItem((L2Market.Domain.Entities.ExPrivateStoreSearchItemPacket.PrivateStoreItem)item));
                 
-                System.Diagnostics.Debug.WriteLine($"[MarketWindowViewModel] PrivateStore items: {privateStoreViewModels.Count()}");
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MarketWindowViewModel] PrivateStore items: {privateStoreViewModels.Count()}"));
                 items.AddRange(privateStoreViewModels);
             }
 
@@ -226,7 +262,7 @@ namespace L2Market.UI.ViewModels
                 var commissionViewModels = commissionItems.Cast<object>().Select(item => 
                     MarketItemViewModel.FromCommissionItem((L2Market.Domain.Entities.ExResponseCommissionListPacket.CommissionItem)item));
                 
-                System.Diagnostics.Debug.WriteLine($"[MarketWindowViewModel] Commission items: {commissionViewModels.Count()}");
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MarketWindowViewModel] Commission items: {commissionViewModels.Count()}"));
                 items.AddRange(commissionViewModels);
             }
 
@@ -236,11 +272,11 @@ namespace L2Market.UI.ViewModels
                 var worldExchangeViewModels = worldExchangeItems.Cast<object>().Select(item => 
                     MarketItemViewModel.FromWorldExchangeItem((L2Market.Domain.Entities.WorldExchangeItemListPacket.WorldExchangeItemInfo)item));
                 
-                System.Diagnostics.Debug.WriteLine($"[MarketWindowViewModel] WorldExchange items: {worldExchangeViewModels.Count()}");
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MarketWindowViewModel] WorldExchange items: {worldExchangeViewModels.Count()}"));
                 items.AddRange(worldExchangeViewModels);
             }
 
-            System.Diagnostics.Debug.WriteLine($"[MarketWindowViewModel] Total items returned: {items.Count}");
+            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MarketWindowViewModel] Total items returned: {items.Count}"));
             return items.ToArray();
         }
 
@@ -283,17 +319,17 @@ namespace L2Market.UI.ViewModels
             });
         }
 
-        private void AddRule()
+        private async void AddRule()
         {
             // TODO: Открыть окно добавления правила
-            System.Diagnostics.Debug.WriteLine("Add rule clicked");
+            await _eventBus.PublishAsync(new LogMessageReceivedEvent("Add rule clicked"));
         }
 
         private void EditRule(TrackingRule? rule)
         {
             if (rule == null) return;
             // TODO: Открыть окно редактирования правила
-            System.Diagnostics.Debug.WriteLine($"Edit rule clicked: {rule.Name}");
+            _ = Task.Run(async () => await _eventBus.PublishAsync(new LogMessageReceivedEvent($"Edit rule clicked: {rule.Name}")));
         }
 
         private async Task DeleteRuleAsync(TrackingRule? rule)
@@ -304,13 +340,12 @@ namespace L2Market.UI.ViewModels
             await LoadTrackingRulesAsync();
         }
 
-        private Task BuyItemAsync(MarketItemViewModel? item)
+        private async Task BuyItemAsync(MarketItemViewModel? item)
         {
-            if (item == null) return Task.CompletedTask;
+            if (item == null) return;
             
             // TODO: Реализовать покупку предмета
-            System.Diagnostics.Debug.WriteLine($"Buy item clicked: {item.ItemName}");
-            return Task.CompletedTask;
+            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"Buy item clicked: {item.ItemName}"));
         }
 
         private async void OnItemMatchFound(object? sender, ItemMatchFoundEventArgs e)
@@ -319,10 +354,29 @@ namespace L2Market.UI.ViewModels
             await LoadTrackingRulesAsync(); // Обновляем счетчики
         }
 
-        private async void OnAutoBuyTriggered(object? sender, AutoBuyTriggeredEventArgs e)
+
+        /// <summary>
+        /// Включает/выключает отслеживание для типа рынка
+        /// </summary>
+        private async void ToggleTracking(MarketType marketType, bool isEnabled)
         {
-            await _autoBuyService.TryAutoBuyAsync(e.Match);
-            await LoadTrackingRulesAsync(); // Обновляем счетчики
+            try
+            {
+                if (isEnabled)
+                {
+                    // Включаем отслеживание с интервалом 30 секунд
+                    _marketQueryService.StartQuerying(marketType, TimeSpan.FromSeconds(30));
+                }
+                else
+                {
+                    // Выключаем отслеживание
+                    _marketQueryService.StopQuerying(marketType);
+                }
+            }
+            catch (Exception ex)
+            {
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"Error toggling tracking for {marketType}: {ex.Message}"));
+            }
         }
 
         /// <summary>
@@ -330,7 +384,7 @@ namespace L2Market.UI.ViewModels
         /// </summary>
         private async Task OnPrivateStoreUpdated(PrivateStoreUpdatedEvent evt)
         {
-            System.Diagnostics.Debug.WriteLine($"[MarketWindowViewModel] PrivateStore updated: {evt.Items.Count} items");
+            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MarketWindowViewModel] PrivateStore updated: {evt.Items.Count} items"));
             // Добавляем небольшую задержку, чтобы сервисы успели обработать данные
             await Task.Delay(100);
             await RefreshAsync(); // Автоматически обновляем UI
@@ -341,7 +395,7 @@ namespace L2Market.UI.ViewModels
         /// </summary>
         private async Task OnCommissionUpdated(CommissionUpdatedEvent evt)
         {
-            System.Diagnostics.Debug.WriteLine($"[MarketWindowViewModel] Commission updated: {evt.Items.Count} items");
+            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MarketWindowViewModel] Commission updated: {evt.Items.Count} items"));
             // Добавляем небольшую задержку, чтобы сервисы успели обработать данные
             await Task.Delay(100);
             await RefreshAsync(); // Автоматически обновляем UI
@@ -352,7 +406,7 @@ namespace L2Market.UI.ViewModels
         /// </summary>
         private async Task OnWorldExchangeUpdated(WorldExchangeUpdatedEvent evt)
         {
-            System.Diagnostics.Debug.WriteLine($"[MarketWindowViewModel] WorldExchange updated: {evt.Items.Count} items");
+            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MarketWindowViewModel] WorldExchange updated: {evt.Items.Count} items"));
             // Добавляем небольшую задержку, чтобы сервисы успели обработать данные
             await Task.Delay(100);
             await RefreshAsync(); // Автоматически обновляем UI

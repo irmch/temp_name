@@ -16,9 +16,9 @@ namespace L2Market.Core.Services
     public class CommissionService : IMarketService, IDisposable
     {
         private readonly IEventBus _eventBus;
-        private readonly ConcurrentDictionary<long, CommissionItem> _items;
-        private readonly ConcurrentDictionary<int, HashSet<long>> _itemsByItemId;
-        private readonly ConcurrentDictionary<long, DateTime> _itemLastSeen;
+        private readonly ConcurrentDictionary<ulong, CommissionItem> _items;
+        private readonly ConcurrentDictionary<int, HashSet<ulong>> _itemsByItemId;
+        private readonly ConcurrentDictionary<ulong, DateTime> _itemLastSeen;
         private readonly Timer _cleanupTimer;
         private readonly object _lock = new object();
         
@@ -28,9 +28,9 @@ namespace L2Market.Core.Services
         public CommissionService(IEventBus eventBus)
         {
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
-            _items = new ConcurrentDictionary<long, CommissionItem>();
-            _itemsByItemId = new ConcurrentDictionary<int, HashSet<long>>();
-            _itemLastSeen = new ConcurrentDictionary<long, DateTime>();
+            _items = new ConcurrentDictionary<ulong, CommissionItem>();
+            _itemsByItemId = new ConcurrentDictionary<int, HashSet<ulong>>();
+            _itemLastSeen = new ConcurrentDictionary<ulong, DateTime>();
             
             // Подписываемся на события обновления комиссионных магазинов
             _eventBus.Subscribe<CommissionUpdatedEvent>(HandleCommissionUpdated);
@@ -58,22 +58,42 @@ namespace L2Market.Core.Services
         /// <summary>
         /// Обновление предметов в комиссионном магазине
         /// </summary>
-        private Task UpdateItemsAsync(IReadOnlyList<CommissionItem> newItems)
+        private async Task UpdateItemsAsync(IReadOnlyList<CommissionItem> newItems)
         {
             var currentTime = DateTime.UtcNow;
             
-            System.Diagnostics.Debug.WriteLine($"[CommissionService] Adding/updating {newItems.Count} items");
+            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommissionService] Adding/updating {newItems.Count} items"));
             
             // Добавляем/обновляем новые предметы
             foreach (var item in newItems)
             {
+                // Логируем детали каждого предмета с особым вниманием к нулевым ценам
+                if (item.PricePerUnit == 0)
+                {
+                    await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommissionService] ⚠️ ZERO PRICE: ID={item.CommissionId}, Price={item.PricePerUnit}, Count={item.ItemInfo.Count}, Seller='{item.SellerName}', Type={item.CommissionItemType}, Duration={item.DurationType}"));
+                }
+                else if (item.PricePerUnit >= 1000000000000) // Цены в триллионах
+                {
+                    var priceInTrillions = (double)item.PricePerUnit / 1000000000000;
+                    await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommissionService] 💰 TRILLION PRICE: ID={item.CommissionId}, Price={priceInTrillions:F2}T, Count={item.ItemInfo.Count}, Seller='{item.SellerName}'"));
+                }
+                else if (item.PricePerUnit >= 1000000000) // Цены в миллиардах
+                {
+                    var priceInBillions = (double)item.PricePerUnit / 1000000000;
+                    await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommissionService] 💰 BILLION PRICE: ID={item.CommissionId}, Price={priceInBillions:F2}B, Count={item.ItemInfo.Count}, Seller='{item.SellerName}'"));
+                }
+                else
+                {
+                    await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommissionService] Item: ID={item.CommissionId}, Price={item.PricePerUnit}, Count={item.ItemInfo.Count}, Seller='{item.SellerName}'"));
+                }
+                
                 _items.AddOrUpdate(item.CommissionId, item, (k, v) => item);
                 _itemLastSeen.AddOrUpdate(item.CommissionId, currentTime, (k, v) => currentTime);
                 
                 // Обновляем индекс по ID предмета
                 _itemsByItemId.AddOrUpdate(
                     item.ItemInfo.ItemId,
-                    new HashSet<long> { item.CommissionId },
+                    new HashSet<ulong> { item.CommissionId },
                     (k, v) =>
                     {
                         v.Add(item.CommissionId);
@@ -81,8 +101,7 @@ namespace L2Market.Core.Services
                     });
             }
             
-            System.Diagnostics.Debug.WriteLine($"[CommissionService] Total items after update: {_items.Count}");
-            return Task.CompletedTask;
+            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommissionService] Total items after update: {_items.Count}"));
         }
 
         public async Task<IEnumerable<object>> GetAllItemsAsync()
@@ -108,7 +127,7 @@ namespace L2Market.Core.Services
         public async Task<IEnumerable<object>> GetItemsByPriceRangeAsync(long minPrice, long maxPrice)
         {
             var items = _items.Values
-                .Where(item => item.PricePerUnit >= minPrice && item.PricePerUnit <= maxPrice)
+                .Where(item => (long)item.PricePerUnit >= minPrice && (long)item.PricePerUnit <= maxPrice)
                 .Cast<object>();
             
             return await Task.FromResult(items);
@@ -135,7 +154,7 @@ namespace L2Market.Core.Services
             try
             {
                 var currentTime = DateTime.UtcNow;
-                var expiredIds = new List<long>();
+                var expiredIds = new List<ulong>();
 
                 // Находим устаревшие предметы
                 foreach (var kvp in _itemLastSeen)
@@ -318,9 +337,9 @@ namespace L2Market.Core.Services
                                    .Distinct()
                                    .Count(),
                 UniqueItemTypes = items.Select(i => i.ItemInfo.ItemId).Distinct().Count(),
-                AveragePrice = items.Any() ? (long)items.Average(i => i.PricePerUnit) : 0,
-                MinPrice = items.Any() ? items.Min(i => i.PricePerUnit) : 0,
-                MaxPrice = items.Any() ? items.Max(i => i.PricePerUnit) : 0,
+                AveragePrice = items.Any() ? (long)items.Average(i => (decimal)i.PricePerUnit) : 0,
+                MinPrice = items.Any() ? (long)items.Min(i => i.PricePerUnit) : 0,
+                MaxPrice = items.Any() ? (long)items.Max(i => i.PricePerUnit) : 0,
                 ExpiringSoon = items.Count(i => i.EndTime - currentTime <= 3600), // 1 час
                 WithAugmentation = items.Count(i => i.ItemInfo.Augmentation != null && i.ItemInfo.Augmentation.Any()),
                 WithElementalAttrs = items.Count(i => i.ItemInfo.ElementalAttrs != null && i.ItemInfo.ElementalAttrs.Any()),

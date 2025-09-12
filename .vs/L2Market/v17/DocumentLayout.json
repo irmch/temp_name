@@ -3,6 +3,34 @@
   "WorkspaceRootPath": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{F060F225-8E65-40A5-8802-C4BB92916FD7}|L2Market.Domain\\L2Market.Domain.csproj|c:\\users\\gustavo\\documents\\l2market\\l2market.domain\\entities\\worldexchangeitemlistpacket\\worldexchangeitemlistpacket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F060F225-8E65-40A5-8802-C4BB92916FD7}|L2Market.Domain\\L2Market.Domain.csproj|solutionrelative:l2market.domain\\entities\\worldexchangeitemlistpacket\\worldexchangeitemlistpacket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A47FAEBC-D2E5-4B54-A4A3-BD8667990969}|L2Market.Core\\L2Market.Core.csproj|c:\\users\\gustavo\\documents\\l2market\\l2market.core\\services\\commandservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A47FAEBC-D2E5-4B54-A4A3-BD8667990969}|L2Market.Core\\L2Market.Core.csproj|solutionrelative:l2market.core\\services\\commandservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F060F225-8E65-40A5-8802-C4BB92916FD7}|L2Market.Domain\\L2Market.Domain.csproj|c:\\users\\gustavo\\documents\\l2market\\l2market.domain\\commands\\requestbypasstoservercommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F060F225-8E65-40A5-8802-C4BB92916FD7}|L2Market.Domain\\L2Market.Domain.csproj|solutionrelative:l2market.domain\\commands\\requestbypasstoservercommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F060F225-8E65-40A5-8802-C4BB92916FD7}|L2Market.Domain\\L2Market.Domain.csproj|c:\\users\\gustavo\\documents\\l2market\\l2market.domain\\commands\\exworldexchangesearchitemcommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F060F225-8E65-40A5-8802-C4BB92916FD7}|L2Market.Domain\\L2Market.Domain.csproj|solutionrelative:l2market.domain\\commands\\exworldexchangesearchitemcommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A47FAEBC-D2E5-4B54-A4A3-BD8667990969}|L2Market.Core\\L2Market.Core.csproj|c:\\users\\gustavo\\documents\\l2market\\l2market.core\\services\\marketqueryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A47FAEBC-D2E5-4B54-A4A3-BD8667990969}|L2Market.Core\\L2Market.Core.csproj|solutionrelative:l2market.core\\services\\marketqueryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F060F225-8E65-40A5-8802-C4BB92916FD7}|L2Market.Domain\\L2Market.Domain.csproj|c:\\users\\gustavo\\documents\\l2market\\l2market.domain\\services\\icommandservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F060F225-8E65-40A5-8802-C4BB92916FD7}|L2Market.Domain\\L2Market.Domain.csproj|solutionrelative:l2market.domain\\services\\icommandservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{794439B4-948E-4BE2-9BC8-A01DAF4D33A0}|L2Market.Infrastructure\\L2Market.Infrastructure.csproj|c:\\users\\gustavo\\documents\\l2market\\l2market.infrastructure\\namedpipeservices\\namedpipeservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{794439B4-948E-4BE2-9BC8-A01DAF4D33A0}|L2Market.Infrastructure\\L2Market.Infrastructure.csproj|solutionrelative:l2market.infrastructure\\namedpipeservices\\namedpipeservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{F060F225-8E65-40A5-8802-C4BB92916FD7}|L2Market.Domain\\L2Market.Domain.csproj|c:\\users\\gustavo\\documents\\l2market\\l2market.domain\\entities\\exresponsecommissionlistpacket\\exresponsecommissionlistpacket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F060F225-8E65-40A5-8802-C4BB92916FD7}|L2Market.Domain\\L2Market.Domain.csproj|solutionrelative:l2market.domain\\entities\\exresponsecommissionlistpacket\\exresponsecommissionlistpacket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -16,10 +44,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{00048DD9-6AAD-4026-8931-AEB739F2C8D5}|L2Market.UI\\L2Market.UI.csproj|c:\\users\\gustavo\\documents\\l2market\\l2market.ui\\eventhandlers\\uieventhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{00048DD9-6AAD-4026-8931-AEB739F2C8D5}|L2Market.UI\\L2Market.UI.csproj|solutionrelative:l2market.ui\\eventhandlers\\uieventhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{794439B4-948E-4BE2-9BC8-A01DAF4D33A0}|L2Market.Infrastructure\\L2Market.Infrastructure.csproj|c:\\users\\gustavo\\documents\\l2market\\l2market.infrastructure\\namedpipeservices\\namedpipeservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{794439B4-948E-4BE2-9BC8-A01DAF4D33A0}|L2Market.Infrastructure\\L2Market.Infrastructure.csproj|solutionrelative:l2market.infrastructure\\namedpipeservices\\namedpipeservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\GUSTAVO\\AppData\\Local\\Temp\\.vsdbgsrc\\dc2a890e90ac087b42e9e56a38447974463bbcdae8d976c13656a86d10043618\\ServiceProviderServiceExtensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
@@ -49,6 +73,10 @@
     {
       "AbsoluteMoniker": "D:0:0:{00048DD9-6AAD-4026-8931-AEB739F2C8D5}|L2Market.UI\\L2Market.UI.csproj|c:\\users\\gustavo\\documents\\l2market\\l2market.ui\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{00048DD9-6AAD-4026-8931-AEB739F2C8D5}|L2Market.UI\\L2Market.UI.csproj|solutionrelative:l2market.ui\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F060F225-8E65-40A5-8802-C4BB92916FD7}|L2Market.Domain\\L2Market.Domain.csproj|c:\\users\\gustavo\\documents\\l2market\\l2market.domain\\commands\\say2command.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F060F225-8E65-40A5-8802-C4BB92916FD7}|L2Market.Domain\\L2Market.Domain.csproj|solutionrelative:l2market.domain\\commands\\say2command.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -63,19 +91,58 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "ExResponseCommissionListPacket.cs",
-              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\Entities\\ExResponseCommissionListPacket\\ExResponseCommissionListPacket.cs",
-              "RelativeDocumentMoniker": "L2Market.Domain\\Entities\\ExResponseCommissionListPacket\\ExResponseCommissionListPacket.cs",
-              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\Entities\\ExResponseCommissionListPacket\\ExResponseCommissionListPacket.cs",
-              "RelativeToolTip": "L2Market.Domain\\Entities\\ExResponseCommissionListPacket\\ExResponseCommissionListPacket.cs",
-              "ViewState": "AgIAAKYAAAAAAAAAAAAYwL4AAAANAAAAAAAAAA==",
+              "Title": "WorldExchangeItemListPacket.cs",
+              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\Entities\\WorldExchangeItemListPacket\\WorldExchangeItemListPacket.cs",
+              "RelativeDocumentMoniker": "L2Market.Domain\\Entities\\WorldExchangeItemListPacket\\WorldExchangeItemListPacket.cs",
+              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\Entities\\WorldExchangeItemListPacket\\WorldExchangeItemListPacket.cs",
+              "RelativeToolTip": "L2Market.Domain\\Entities\\WorldExchangeItemListPacket\\WorldExchangeItemListPacket.cs",
+              "ViewState": "AgIAAGgAAAAAAAAAAAAawHwAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-10T01:34:01.42Z",
+              "WhenOpened": "2025-09-12T13:29:10.412Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 5,
+              "Title": "ICommandService.cs",
+              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\Services\\ICommandService.cs",
+              "RelativeDocumentMoniker": "L2Market.Domain\\Services\\ICommandService.cs",
+              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\Services\\ICommandService.cs",
+              "RelativeToolTip": "L2Market.Domain\\Services\\ICommandService.cs",
+              "ViewState": "AgIAAEUAAAAAAAAAAAAEwFAAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-11T18:28:26.01Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "RequestBypassToServerCommand.cs",
+              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\Commands\\RequestBypassToServerCommand.cs",
+              "RelativeDocumentMoniker": "L2Market.Domain\\Commands\\RequestBypassToServerCommand.cs",
+              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\Commands\\RequestBypassToServerCommand.cs",
+              "RelativeToolTip": "L2Market.Domain\\Commands\\RequestBypassToServerCommand.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAuwBkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-11T18:27:54.44Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "MarketQueryService.cs",
+              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Core\\Services\\MarketQueryService.cs",
+              "RelativeDocumentMoniker": "L2Market.Core\\Services\\MarketQueryService.cs",
+              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Core\\Services\\MarketQueryService.cs",
+              "RelativeToolTip": "L2Market.Core\\Services\\MarketQueryService.cs",
+              "ViewState": "AgIAAOwAAAAAAAAAAAAAwPoAAABHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-11T18:26:58.056Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "ExPrivateStoreSearchItemPacket.cs",
               "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\Entities\\ExPrivateStoreSearchItemPacket\\ExPrivateStoreSearchItemPacket.cs",
               "RelativeDocumentMoniker": "L2Market.Domain\\Entities\\ExPrivateStoreSearchItemPacket\\ExPrivateStoreSearchItemPacket.cs",
@@ -83,12 +150,121 @@
               "RelativeToolTip": "L2Market.Domain\\Entities\\ExPrivateStoreSearchItemPacket\\ExPrivateStoreSearchItemPacket.cs",
               "ViewState": "AgIAADgAAAAAAAAAAAAcwEcAAAAaAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-10T01:04:44.981Z",
+              "WhenOpened": "2025-09-10T01:04:44.981Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "ExResponseCommissionListPacket.cs",
+              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\Entities\\ExResponseCommissionListPacket\\ExResponseCommissionListPacket.cs",
+              "RelativeDocumentMoniker": "L2Market.Domain\\Entities\\ExResponseCommissionListPacket\\ExResponseCommissionListPacket.cs",
+              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\Entities\\ExResponseCommissionListPacket\\ExResponseCommissionListPacket.cs",
+              "RelativeToolTip": "L2Market.Domain\\Entities\\ExResponseCommissionListPacket\\ExResponseCommissionListPacket.cs",
+              "ViewState": "AgIAAMEAAAAAAAAAAAAYwNEAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-10T01:34:01.42Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "CommandService.cs",
+              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Core\\Services\\CommandService.cs",
+              "RelativeDocumentMoniker": "L2Market.Core\\Services\\CommandService.cs",
+              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Core\\Services\\CommandService.cs",
+              "RelativeToolTip": "L2Market.Core\\Services\\CommandService.cs",
+              "ViewState": "AgIAAPQAAAAAAAAAAAAiwAgBAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-11T00:32:47.671Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
+              "Title": "ExWorldExchangeSearchItemCommand.cs",
+              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\Commands\\ExWorldExchangeSearchItemCommand.cs",
+              "RelativeDocumentMoniker": "L2Market.Domain\\Commands\\ExWorldExchangeSearchItemCommand.cs",
+              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\Commands\\ExWorldExchangeSearchItemCommand.cs",
+              "RelativeToolTip": "L2Market.Domain\\Commands\\ExWorldExchangeSearchItemCommand.cs",
+              "ViewState": "AgIAADAAAAAAAAAAAAA4wEYAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-11T23:18:04.136Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "NamedPipeService.cs",
+              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Infrastructure\\NamedPipeServices\\NamedPipeService.cs",
+              "RelativeDocumentMoniker": "L2Market.Infrastructure\\NamedPipeServices\\NamedPipeService.cs",
+              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Infrastructure\\NamedPipeServices\\NamedPipeService.cs",
+              "RelativeToolTip": "L2Market.Infrastructure\\NamedPipeServices\\NamedPipeService.cs",
+              "ViewState": "AgIAAIkAAAAAAAAAAAAAwJ4AAABjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-09T19:29:22.728Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "UiEventHandler.cs",
+              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\EventHandlers\\UiEventHandler.cs",
+              "RelativeDocumentMoniker": "L2Market.UI\\EventHandlers\\UiEventHandler.cs",
+              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\EventHandlers\\UiEventHandler.cs",
+              "RelativeToolTip": "L2Market.UI\\EventHandlers\\UiEventHandler.cs",
+              "ViewState": "AgIAAD8BAAAAAAAAAAAuwFEBAABLAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-09T14:46:14.195Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "MainWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\MainWindow.xaml",
+              "RelativeDocumentMoniker": "L2Market.UI\\MainWindow.xaml",
+              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\MainWindow.xaml",
+              "RelativeToolTip": "L2Market.UI\\MainWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-09-08T22:09:10.773Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "App.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\App.xaml.cs",
+              "RelativeDocumentMoniker": "L2Market.UI\\App.xaml.cs",
+              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\App.xaml.cs",
+              "RelativeToolTip": "L2Market.UI\\App.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-08T22:09:20.149Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "Say2Command.cs",
+              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\Commands\\Say2Command.cs",
+              "RelativeDocumentMoniker": "L2Market.Domain\\Commands\\Say2Command.cs",
+              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Domain\\Commands\\Say2Command.cs",
+              "RelativeToolTip": "L2Market.Domain\\Commands\\Say2Command.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwBQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-11T00:32:38.602Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "AssemblyInfo.cs",
+              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\AssemblyInfo.cs",
+              "RelativeDocumentMoniker": "L2Market.UI\\AssemblyInfo.cs",
+              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\AssemblyInfo.cs",
+              "RelativeToolTip": "L2Market.UI\\AssemblyInfo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-08T22:09:21.431Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
               "Title": "CallSiteFactory.cs",
               "DocumentMoniker": "C:\\Users\\GUSTAVO\\AppData\\Local\\Temp\\.vsdbgsrc\\e8881a18ce0bc40ade80d85a0176c91c6d3287f2d33b52772231b568aca023c9\\CallSiteFactory.cs",
               "RelativeDocumentMoniker": "..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\e8881a18ce0bc40ade80d85a0176c91c6d3287f2d33b52772231b568aca023c9\\CallSiteFactory.cs",
@@ -102,54 +278,6 @@
             {
               "$type": "Document",
               "DocumentIndex": 11,
-              "Title": "AssemblyInfo.cs",
-              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\AssemblyInfo.cs",
-              "RelativeDocumentMoniker": "L2Market.UI\\AssemblyInfo.cs",
-              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\AssemblyInfo.cs",
-              "RelativeToolTip": "L2Market.UI\\AssemblyInfo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-08T22:09:21.431Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "App.xaml.cs",
-              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\App.xaml.cs",
-              "RelativeDocumentMoniker": "L2Market.UI\\App.xaml.cs",
-              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\App.xaml.cs",
-              "RelativeToolTip": "L2Market.UI\\App.xaml.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-08T22:09:20.149Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "MainWindow.xaml",
-              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\MainWindow.xaml",
-              "RelativeDocumentMoniker": "L2Market.UI\\MainWindow.xaml",
-              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\MainWindow.xaml",
-              "RelativeToolTip": "L2Market.UI\\MainWindow.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-09-08T22:09:10.773Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "UiEventHandler.cs",
-              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\EventHandlers\\UiEventHandler.cs",
-              "RelativeDocumentMoniker": "L2Market.UI\\EventHandlers\\UiEventHandler.cs",
-              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\EventHandlers\\UiEventHandler.cs",
-              "RelativeToolTip": "L2Market.UI\\EventHandlers\\UiEventHandler.cs",
-              "ViewState": "AgIAAD8BAAAAAAAAAAAuwFEBAABLAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-09T14:46:14.195Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
               "Title": "ServiceProviderServiceExtensions.cs",
               "DocumentMoniker": "C:\\Users\\GUSTAVO\\AppData\\Local\\Temp\\.vsdbgsrc\\dc2a890e90ac087b42e9e56a38447974463bbcdae8d976c13656a86d10043618\\ServiceProviderServiceExtensions.cs",
               "RelativeDocumentMoniker": "..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\dc2a890e90ac087b42e9e56a38447974463bbcdae8d976c13656a86d10043618\\ServiceProviderServiceExtensions.cs",
@@ -162,20 +290,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "NamedPipeService.cs",
-              "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Infrastructure\\NamedPipeServices\\NamedPipeService.cs",
-              "RelativeDocumentMoniker": "L2Market.Infrastructure\\NamedPipeServices\\NamedPipeService.cs",
-              "ToolTip": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Infrastructure\\NamedPipeServices\\NamedPipeService.cs",
-              "RelativeToolTip": "L2Market.Infrastructure\\NamedPipeServices\\NamedPipeService.cs",
-              "ViewState": "AgIAALoAAAAAAAAAAAAuwMoAAABQAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-09T19:29:22.728Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 12,
               "Title": "XamlReader.cs",
               "DocumentMoniker": "C:\\Users\\GUSTAVO\\AppData\\Local\\Temp\\.vsdbgsrc\\0a84cc53936b314ba955b54f50bf4796d8234943f3fd7b93873381b45d404026\\XamlReader.cs",
               "RelativeDocumentMoniker": "..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\0a84cc53936b314ba955b54f50bf4796d8234943f3fd7b93873381b45d404026\\XamlReader.cs",
@@ -188,7 +303,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 16,
               "Title": "App.xaml",
               "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.UI\\App.xaml",
               "RelativeDocumentMoniker": "L2Market.UI\\App.xaml",
@@ -199,7 +314,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 15,
               "Title": "FlunderDLL.cpp",
               "DocumentMoniker": "C:\\Users\\GUSTAVO\\Documents\\L2Market\\L2Market.Injector\\FlunderDLL.cpp",
               "RelativeDocumentMoniker": "L2Market.Injector\\FlunderDLL.cpp",
@@ -211,7 +326,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 13,
               "Title": "PropertyPathWorker.cs",
               "DocumentMoniker": "C:\\Users\\GUSTAVO\\AppData\\Local\\Temp\\.vsdbgsrc\\b8b74ed96cb310e7521b08fc2fd291b3e429a4b509c86c75e9f5ab857cffbff6\\PropertyPathWorker.cs",
               "RelativeDocumentMoniker": "..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\b8b74ed96cb310e7521b08fc2fd291b3e429a4b509c86c75e9f5ab857cffbff6\\PropertyPathWorker.cs",

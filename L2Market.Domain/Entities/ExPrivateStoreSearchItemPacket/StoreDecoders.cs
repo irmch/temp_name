@@ -10,10 +10,10 @@ public static class StoreDecoders
     {
         return storeType switch
         {
-            0 => "Продажа",
-            1 => "Покупка",
-            2 => "Пакетная продажа",
-            _ => $"Неизвестный ({storeType})"
+            0x00 => "Продажа",
+            0x01 => "Покупка",
+            0x03 => "Все типы",
+            _ => $"Неизвестный (0x{storeType:X2})"
         };
     }
 

@@ -15,12 +15,14 @@ namespace L2Market.UI.ViewModels
         private IApplicationService _applicationService;
         private INamedPipeService _namedPipeService;
         private IConfigurationService _configurationService;
+        private ICommandService _commandService;
         private string _dllPath;
         private string _processName;
         private bool _isLoading;
         private bool _isConnected;
         private System.Windows.Visibility _progressBarVisibility;
         private int _processId;
+        private string _chatMessage = string.Empty;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -98,15 +100,28 @@ namespace L2Market.UI.ViewModels
         public ICommand ExecuteInjectionCommand { get; }
         public ICommand OpenSettingsCommand { get; }
         public ICommand OpenMarketCommand { get; }
+        public ICommand SendChatMessageCommand { get; }
+
+        public string ChatMessage
+        {
+            get => _chatMessage ?? string.Empty;
+            set
+            {
+                _chatMessage = value;
+                OnPropertyChanged();
+            }
+        }
 
         public MainViewModel(
             IApplicationService applicationService,
             INamedPipeService namedPipeService,
-            IConfigurationService configurationService)
+            IConfigurationService configurationService,
+            ICommandService commandService)
         {
             _applicationService = applicationService ?? throw new ArgumentNullException(nameof(applicationService));
             _namedPipeService = namedPipeService ?? throw new ArgumentNullException(nameof(namedPipeService));
             _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
+            _commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
 
             // Initialize with default values from configuration
             var settings = _configurationService.Settings;
@@ -119,6 +134,7 @@ namespace L2Market.UI.ViewModels
             ExecuteInjectionCommand = new RelayCommand(async () => await ExecuteInjectionAsync(), () => CanExecuteInjection);
             OpenSettingsCommand = new RelayCommand(OpenSettings);
             OpenMarketCommand = new RelayCommand(OpenMarket);
+            SendChatMessageCommand = new RelayCommand(async () => await SendChatMessageAsync(), () => !string.IsNullOrWhiteSpace(ChatMessage));
 
             // Initialize connection status
             IsConnected = _namedPipeService.IsConnected;
@@ -310,6 +326,24 @@ namespace L2Market.UI.ViewModels
                 // Fallback logging to debug output
                 System.Diagnostics.Debug.WriteLine($"LogMessage error: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Original message: {message}");
+            }
+        }
+
+        private async Task SendChatMessageAsync()
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(ChatMessage))
+                    return;
+
+                await _commandService.SendSay2CommandAsync(ChatMessage, 0);
+                
+                // Очищаем поле после отправки
+                ChatMessage = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"Ошибка отправки сообщения: {ex.Message}");
             }
         }
 

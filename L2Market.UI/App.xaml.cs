@@ -45,7 +45,6 @@ namespace L2Market.UI
             // Force creation of tracking services
             _ = _serviceProvider.GetRequiredService<TrackingService>();
             _ = _serviceProvider.GetRequiredService<NotificationService>();
-            _ = _serviceProvider.GetRequiredService<AutoBuyService>();
             
             // Force creation of MarketWindowViewModel to ensure subscriptions are active
             _ = _serviceProvider.GetRequiredService<MarketWindowViewModel>();

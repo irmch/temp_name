@@ -36,5 +36,16 @@ namespace L2Market.UI
             }
         }
 
+        private void TextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                if (_viewModel?.SendChatMessageCommand?.CanExecute(null) == true)
+                {
+                    _viewModel.SendChatMessageCommand.Execute(null);
+                }
+            }
+        }
+
     }
 }

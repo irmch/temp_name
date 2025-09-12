@@ -147,7 +147,7 @@ namespace L2Market.Infrastructure.NamedPipeServices
                 };
                 string jsonString = System.Text.Json.JsonSerializer.Serialize(json);
                 
-                if (_writer != null && _isConnected)
+                if (_writer != null)
                 {
                     await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] Отправка команды: {hex.Length} символов"));
                     await _writer.WriteLineAsync(jsonString);

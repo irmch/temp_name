@@ -17,6 +17,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
@@ -95,8 +96,39 @@
                      Visibility="{Binding ProgressBarVisibility}"
                      Margin="0,0,0,15" Height="6"/>
         
+        <!-- Chat Section -->
+        <GroupBox Grid.Row="5" Header="💬 Отправка сообщений в чат" Margin="0,0,0,15" Foreground="#212529">
+            <Grid Margin="15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBox Grid.Column="0" 
+                         Text="{Binding ChatMessage, UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,0,10,0"
+                         Padding="10,8"
+                         FontSize="14"
+                         VerticalContentAlignment="Center"
+                         Background="White"
+                         BorderBrush="#CED4DA"
+                         BorderThickness="1"
+                         KeyDown="TextBox_KeyDown"/>
+                
+                <Button Grid.Column="1" 
+                        Content="📤 Отправить" 
+                        Command="{Binding SendChatMessageCommand}"
+                        Padding="20,8"
+                        MinWidth="120"
+                        Background="#28A745" 
+                        Foreground="White"
+                        BorderThickness="0"
+                        FontWeight="Bold"/>
+            </Grid>
+        </GroupBox>
+
         <!-- Status Log -->
-        <GroupBox Grid.Row="5" Header="Status Log" Margin="0,0,0,0">
+        <GroupBox Grid.Row="6" Header="Status Log" Margin="0,0,0,0">
             <Grid>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <ListBox ItemsSource="{Binding LogMessages}" 

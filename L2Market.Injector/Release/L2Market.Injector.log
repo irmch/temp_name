@@ -8,7 +8,6 @@
   Finished generating code
   L2Market.Injector.vcxproj -> C:\Users\GUSTAVO\Documents\L2Market\Release\L2Market.Injector.dll
   Copying DLL to UI project...
-  The process cannot access the file because it is being used by another process.
-          0 file(s) copied.
+          1 file(s) copied.
           1 file(s) copied.
   DLL copied successfully!
