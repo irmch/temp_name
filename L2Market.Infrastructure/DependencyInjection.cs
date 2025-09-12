@@ -240,6 +240,7 @@ namespace L2Market.Infrastructure
             services.AddScoped<IDllInjector, DllInjector>();
             services.AddScoped<IDllInjectionService, DllInjectionService>();
             services.AddScoped<INamedPipeService, NamedPipeService>();
+            services.AddScoped<IWindowMonitorService, WindowMonitorService>();
             return services;
         }
     }

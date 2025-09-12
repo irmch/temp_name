@@ -14,7 +14,7 @@ namespace L2Market.Core
         public static IServiceCollection AddCore(this IServiceCollection services)
         {
             // Register configuration
-            services.AddSingleton<IConfigurationService, ConfigurationService>();
+            services.AddSingleton<IConfigurationService, IniConfigurationService>();
             
             // Register services
             services.AddScoped<IApplicationService, ApplicationService>();

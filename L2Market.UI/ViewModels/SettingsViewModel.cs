@@ -101,27 +101,73 @@ namespace L2Market.UI.ViewModels
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
         public ICommand ResetCommand { get; }
+        public ICommand BrowseDllCommand { get; }
 
         public SettingsViewModel(IConfigurationService configurationService)
         {
             _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
-            _settings = _configurationService.Settings;
+            // Create a deep copy of settings to work with
+            _settings = new AppSettings
+            {
+                NamedPipe = new NamedPipeSettings
+                {
+                    ConnectionTimeout = _configurationService.Settings.NamedPipe.ConnectionTimeout,
+                    RetryDelay = _configurationService.Settings.NamedPipe.RetryDelay,
+                    MaxRetries = _configurationService.Settings.NamedPipe.MaxRetries,
+                    ReadTimeout = _configurationService.Settings.NamedPipe.ReadTimeout,
+                    ServerShutdownTimeout = _configurationService.Settings.NamedPipe.ServerShutdownTimeout
+                },
+                Injection = new InjectionSettings
+                {
+                    WorkflowTimeout = _configurationService.Settings.Injection.WorkflowTimeout,
+                    ProcessSearchTimeout = _configurationService.Settings.Injection.ProcessSearchTimeout,
+                    DefaultProcessName = _configurationService.Settings.Injection.DefaultProcessName,
+                    DefaultDllPath = _configurationService.Settings.Injection.DefaultDllPath
+                },
+                UI = new UISettings
+                {
+                    AutoScroll = _configurationService.Settings.UI.AutoScroll,
+                    MaxLogLines = _configurationService.Settings.UI.MaxLogLines,
+                    ShowTimestamps = _configurationService.Settings.UI.ShowTimestamps,
+                    Theme = _configurationService.Settings.UI.Theme,
+                    MinimizeToTray = _configurationService.Settings.UI.MinimizeToTray,
+                    AutoStartEnabled = _configurationService.Settings.UI.AutoStartEnabled
+                }
+            };
             
             SaveCommand = new RelayCommand(async () => await SaveSettingsAsync(), () => HasChanges);
             CancelCommand = new RelayCommand(() => CancelChanges());
             ResetCommand = new RelayCommand(async () => await ResetToDefaultsAsync());
+            BrowseDllCommand = new RelayCommand(BrowseDll);
         }
 
         private async Task SaveSettingsAsync()
         {
             try
             {
-                _configurationService.Settings.NamedPipe = Settings.NamedPipe;
-                _configurationService.Settings.Injection = Settings.Injection;
-                _configurationService.Settings.UI = Settings.UI;
+                // Update the original settings with our changes
+                _configurationService.Settings.NamedPipe.ConnectionTimeout = Settings.NamedPipe.ConnectionTimeout;
+                _configurationService.Settings.NamedPipe.RetryDelay = Settings.NamedPipe.RetryDelay;
+                _configurationService.Settings.NamedPipe.MaxRetries = Settings.NamedPipe.MaxRetries;
+                _configurationService.Settings.NamedPipe.ReadTimeout = Settings.NamedPipe.ReadTimeout;
+                _configurationService.Settings.NamedPipe.ServerShutdownTimeout = Settings.NamedPipe.ServerShutdownTimeout;
+                
+                _configurationService.Settings.Injection.WorkflowTimeout = Settings.Injection.WorkflowTimeout;
+                _configurationService.Settings.Injection.ProcessSearchTimeout = Settings.Injection.ProcessSearchTimeout;
+                _configurationService.Settings.Injection.DefaultProcessName = Settings.Injection.DefaultProcessName;
+                _configurationService.Settings.Injection.DefaultDllPath = Settings.Injection.DefaultDllPath;
+                
+                _configurationService.Settings.UI.AutoScroll = Settings.UI.AutoScroll;
+                _configurationService.Settings.UI.MaxLogLines = Settings.UI.MaxLogLines;
+                _configurationService.Settings.UI.ShowTimestamps = Settings.UI.ShowTimestamps;
+                _configurationService.Settings.UI.Theme = Settings.UI.Theme;
+                _configurationService.Settings.UI.MinimizeToTray = Settings.UI.MinimizeToTray;
+                _configurationService.Settings.UI.AutoStartEnabled = Settings.UI.AutoStartEnabled;
                 
                 await _configurationService.SaveSettingsAsync();
                 HasChanges = false;
+                
+                System.Diagnostics.Debug.WriteLine("Settings saved successfully to L2Market.ini");
             }
             catch (Exception ex)
             {
@@ -132,7 +178,35 @@ namespace L2Market.UI.ViewModels
 
         private void CancelChanges()
         {
-            Settings = _configurationService.Settings;
+            // Reload settings from configuration service
+            _settings = new AppSettings
+            {
+                NamedPipe = new NamedPipeSettings
+                {
+                    ConnectionTimeout = _configurationService.Settings.NamedPipe.ConnectionTimeout,
+                    RetryDelay = _configurationService.Settings.NamedPipe.RetryDelay,
+                    MaxRetries = _configurationService.Settings.NamedPipe.MaxRetries,
+                    ReadTimeout = _configurationService.Settings.NamedPipe.ReadTimeout,
+                    ServerShutdownTimeout = _configurationService.Settings.NamedPipe.ServerShutdownTimeout
+                },
+                Injection = new InjectionSettings
+                {
+                    WorkflowTimeout = _configurationService.Settings.Injection.WorkflowTimeout,
+                    ProcessSearchTimeout = _configurationService.Settings.Injection.ProcessSearchTimeout,
+                    DefaultProcessName = _configurationService.Settings.Injection.DefaultProcessName,
+                    DefaultDllPath = _configurationService.Settings.Injection.DefaultDllPath
+                },
+                UI = new UISettings
+                {
+                    AutoScroll = _configurationService.Settings.UI.AutoScroll,
+                    MaxLogLines = _configurationService.Settings.UI.MaxLogLines,
+                    ShowTimestamps = _configurationService.Settings.UI.ShowTimestamps,
+                    Theme = _configurationService.Settings.UI.Theme,
+                    MinimizeToTray = _configurationService.Settings.UI.MinimizeToTray,
+                    AutoStartEnabled = _configurationService.Settings.UI.AutoStartEnabled
+                }
+            };
+            OnPropertyChanged(nameof(Settings));
             HasChanges = false;
         }
 
@@ -141,13 +215,55 @@ namespace L2Market.UI.ViewModels
             try
             {
                 await _configurationService.ResetToDefaultsAsync();
-                Settings = _configurationService.Settings;
+                _settings = new AppSettings
+                {
+                    NamedPipe = new NamedPipeSettings
+                    {
+                        ConnectionTimeout = _configurationService.Settings.NamedPipe.ConnectionTimeout,
+                        RetryDelay = _configurationService.Settings.NamedPipe.RetryDelay,
+                        MaxRetries = _configurationService.Settings.NamedPipe.MaxRetries,
+                        ReadTimeout = _configurationService.Settings.NamedPipe.ReadTimeout,
+                        ServerShutdownTimeout = _configurationService.Settings.NamedPipe.ServerShutdownTimeout
+                    },
+                    Injection = new InjectionSettings
+                    {
+                        WorkflowTimeout = _configurationService.Settings.Injection.WorkflowTimeout,
+                        ProcessSearchTimeout = _configurationService.Settings.Injection.ProcessSearchTimeout,
+                        DefaultProcessName = _configurationService.Settings.Injection.DefaultProcessName,
+                        DefaultDllPath = _configurationService.Settings.Injection.DefaultDllPath
+                    },
+                    UI = new UISettings
+                    {
+                        AutoScroll = _configurationService.Settings.UI.AutoScroll,
+                        MaxLogLines = _configurationService.Settings.UI.MaxLogLines,
+                        ShowTimestamps = _configurationService.Settings.UI.ShowTimestamps,
+                        Theme = _configurationService.Settings.UI.Theme,
+                        MinimizeToTray = _configurationService.Settings.UI.MinimizeToTray
+                    }
+                };
+                OnPropertyChanged(nameof(Settings));
                 HasChanges = false;
             }
             catch (Exception ex)
             {
                 // Handle error
                 System.Diagnostics.Debug.WriteLine($"Error resetting settings: {ex.Message}");
+            }
+        }
+
+        private void BrowseDll()
+        {
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Select DLL File",
+                Filter = "DLL Files (*.dll)|*.dll|All Files (*.*)|*.*",
+                DefaultExt = "dll"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                Settings.Injection.DefaultDllPath = openFileDialog.FileName;
+                OnPropertyChanged(nameof(Settings));
             }
         }
 

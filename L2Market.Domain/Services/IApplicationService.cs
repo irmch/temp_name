@@ -15,6 +15,11 @@ namespace L2Market.Domain.Services
         Task<WorkflowResult> ExecuteInjectionWorkflowAsync(string dllPath, string processName, CancellationToken cancellationToken = default);
         
         /// <summary>
+        /// Выполняет автоматическую инъекцию: ищет процесс, ждет окно, инжектирует DLL
+        /// </summary>
+        Task<WorkflowResult> ExecuteAutomaticInjectionAsync(CancellationToken cancellationToken = default);
+        
+        /// <summary>
         /// Отправляет команду через NamedPipe
         /// </summary>
         Task<bool> SendCommandAsync(string hexCommand, CancellationToken cancellationToken = default);

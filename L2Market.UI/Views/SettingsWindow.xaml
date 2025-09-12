@@ -98,7 +98,26 @@
                                 <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Settings.Injection.DefaultProcessName}" Margin="0,0,0,10" Height="25" Foreground="#212529" Background="White"/>
                                 
                                 <Label Grid.Row="3" Grid.Column="0" Content="Default DLL Path:" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="#212529"/>
-                                <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Settings.Injection.DefaultDllPath}" Margin="0,0,0,0" Height="25" Foreground="#212529" Background="White"/>
+                                <Grid Grid.Row="3" Grid.Column="1" Margin="0,0,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" 
+                                             Text="{Binding Settings.Injection.DefaultDllPath}" 
+                                             Margin="0,0,10,0" 
+                                             Height="25" 
+                                             Foreground="#212529" 
+                                             Background="White"/>
+                                    <Button Grid.Column="1" 
+                                            Content="Browse..." 
+                                            Command="{Binding BrowseDllCommand}" 
+                                            Padding="10,5" 
+                                            MinWidth="80" 
+                                            Height="25" 
+                                            Foreground="White" 
+                                            Background="#6C757D"/>
+                                </Grid>
                             </Grid>
                         </GroupBox>
                     </Grid>
@@ -142,7 +161,9 @@
                                     <ComboBoxItem Content="Dark" Foreground="#212529"/>
                                 </ComboBox>
                                 
-                                <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Content="Minimize to Tray" IsChecked="{Binding Settings.UI.MinimizeToTray}" Margin="0,0,0,0" VerticalAlignment="Center" Foreground="#212529"/>
+                                <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Content="Minimize to Tray" IsChecked="{Binding Settings.UI.MinimizeToTray}" Margin="0,0,0,15" VerticalAlignment="Center" Foreground="#212529"/>
+                                
+                                <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Content="Auto-start process search on launch" IsChecked="{Binding Settings.UI.AutoStartEnabled}" Margin="0,0,0,0" VerticalAlignment="Center" Foreground="#212529"/>
                             </Grid>
                         </GroupBox>
                     </Grid>

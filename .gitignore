@@ -65,6 +65,10 @@ $RECYCLE.BIN/
 .idea/
 *.sln.iml
 
+# L2Market Configuration files
+L2Market.ini
+appsettings.json
+
 ## .NET Core
 project.lock.json
 project.fragment.lock.json
@@ -374,6 +378,10 @@ FodyWeavers.xsd
 ## JetBrains Rider
 .idea/
 *.sln.iml
+
+# L2Market Configuration files
+L2Market.ini
+appsettings.json
 
 ## Custom additions for L2Market project
 
@@ -779,3 +787,7 @@ FodyWeavers.xsd
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+# L2Market Configuration files
+L2Market.ini
+appsettings.json

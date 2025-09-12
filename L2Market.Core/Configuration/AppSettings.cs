@@ -45,5 +45,6 @@ namespace L2Market.Core.Configuration
         public bool ShowTimestamps { get; set; } = true;
         public string Theme { get; set; } = "Light";
         public bool MinimizeToTray { get; set; } = false;
+        public bool AutoStartEnabled { get; set; } = true;
     }
 }

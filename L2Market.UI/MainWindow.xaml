@@ -40,23 +40,11 @@
         <!-- Configuration Section -->
         <GroupBox Grid.Row="1" Header="Configuration" Margin="0,0,0,15" Foreground="#212529">
             <Grid Margin="15">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <!-- DLL File Path -->
-                <Label Grid.Row="0" Grid.Column="0" Content="DLL File Path:" VerticalAlignment="Center" Margin="0,0,10,10" Foreground="#212529"/>
-                <TextBox Grid.Row="1" Grid.Column="0" 
-                         Text="{Binding DllPath, UpdateSourceTrigger=PropertyChanged}"
-                         Margin="0,0,10,0" Height="30" FontSize="14" Foreground="#212529" Background="White"/>
-                <Button Grid.Row="1" Grid.Column="1" Content="Browse..." 
-                        Command="{Binding BrowseDllCommand}" 
-                        Padding="15,8" MinWidth="80" Height="30" Foreground="White" Background="#6C757D"/>
+                <TextBlock Text="DLL путь и другие настройки можно изменить в окне Settings" 
+                           FontStyle="Italic" 
+                           Foreground="#6C757D" 
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Center"/>
             </Grid>
         </GroupBox>
         
@@ -72,11 +60,16 @@
         <!-- Action Buttons -->
         <Border Grid.Row="3" Background="#F8F9FA" BorderBrush="#E9ECEF" BorderThickness="0,0,0,1" Padding="0,15,0,15" Margin="0,0,0,15">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Find Process &amp; Inject" 
-                        Command="{Binding ExecuteInjectionCommand}"
-                        Padding="25,12" Margin="5" FontWeight="Bold" FontSize="14"
-                        Background="#DC3545" Foreground="White" 
-                        MinWidth="180" Height="40"/>
+                <Button Content="🛑 Stop Search" 
+                        Command="{Binding StopAutoSearchCommand}"
+                        Padding="20,12" Margin="5" FontSize="14"
+                        Background="#FF6B6B" Foreground="White"
+                        MinWidth="150" Height="40"/>
+                <Button Content="🔄 Restart Search" 
+                        Command="{Binding RestartSearchCommand}"
+                        Padding="20,12" Margin="5" FontSize="14"
+                        Background="#17A2B8" Foreground="White"
+                        MinWidth="150" Height="40"/>
                 <Button Content="🏪 Открыть рынок" 
                         Command="{Binding OpenMarketCommand}"
                         Padding="20,12" Margin="5" FontSize="14"
