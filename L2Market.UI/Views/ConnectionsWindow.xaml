@@ -1,0 +1,229 @@
+<Window x:Class="L2Market.UI.Views.ConnectionsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="L2Market - Connections" 
+        Height="600" 
+        Width="900"
+        WindowStartupLocation="CenterScreen"
+        Background="#F8F9FA">
+    
+    <Window.Resources>
+        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#212529"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+        
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="4" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <Style x:Key="ConnectionItemStyle" TargetType="ListViewItem">
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E9ECEF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Margin="{TemplateBinding Margin}">
+                            <ContentPresenter Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#343A40" Padding="20,15">
+            <StackPanel>
+                <TextBlock Text="🎮 L2Market - Process Connections" 
+                          FontSize="24" 
+                          FontWeight="Bold" 
+                          Foreground="White"/>
+                <TextBlock Text="Monitor and manage multiple Lineage 2 processes" 
+                          FontSize="14" 
+                          Foreground="#ADB5BD" 
+                          Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1" Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Status Bar -->
+            <Border Grid.Row="0" Background="#E9ECEF" Padding="15,10" CornerRadius="4" Margin="0,0,0,15">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="📊 Status: " FontWeight="SemiBold" Foreground="#495057"/>
+                    <TextBlock Text="{Binding StatusText}" Foreground="#495057" Margin="5,0,20,0"/>
+                    <TextBlock Text="🔗 Connections: " FontWeight="SemiBold" Foreground="#495057"/>
+                    <TextBlock Text="{Binding ConnectionCount}" Foreground="#495057" Margin="5,0,20,0"/>
+                    <TextBlock Text="✅ Active: " FontWeight="SemiBold" Foreground="#495057"/>
+                    <TextBlock Text="{Binding ConnectedCount}" Foreground="#28a745" Margin="5,0,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Connections List -->
+            <Border Grid.Row="1" Background="White" BorderBrush="#E9ECEF" BorderThickness="1" CornerRadius="4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- List Header -->
+                    <Border Grid.Row="0" Background="#F8F9FA" BorderBrush="#E9ECEF" BorderThickness="0,0,0,1" Padding="15,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Grid.Column="0" Text="Process" FontWeight="Bold" Foreground="#495057"/>
+                            <TextBlock Grid.Column="1" Text="PID" FontWeight="Bold" Foreground="#495057"/>
+                            <TextBlock Grid.Column="2" Text="Status" FontWeight="Bold" Foreground="#495057"/>
+                            <TextBlock Grid.Column="3" Text="Connected" FontWeight="Bold" Foreground="#495057"/>
+                            <TextBlock Grid.Column="4" Text="Actions" FontWeight="Bold" Foreground="#495057"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Connections ListView -->
+                    <ListView Grid.Row="1" 
+                             ItemsSource="{Binding Connections}" 
+                             ItemContainerStyle="{StaticResource ConnectionItemStyle}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="15,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="2*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Process Name -->
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" Foreground="#212529"/>
+                                        <TextBlock Text="{Binding WindowTitle}" FontSize="12" Foreground="#6C757D" Margin="0,2,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- PID -->
+                                    <TextBlock Grid.Column="1" Text="{Binding ProcessId}" VerticalAlignment="Center" Foreground="#495057"/>
+
+                                    <!-- Status -->
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding StatusIcon}" FontSize="16" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding ConnectionStatus}" FontSize="11" Foreground="#6C757D" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <!-- Connected Time -->
+                                    <TextBlock Grid.Column="3" Text="{Binding FormattedConnectedAt}" VerticalAlignment="Center" Foreground="#495057"/>
+
+                                    <!-- Actions -->
+                                    <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Content="🏪 Market" 
+                                               Command="{Binding DataContext.OpenMarketCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                               CommandParameter="{Binding}"
+                                               Background="#28a745" 
+                                               Foreground="White"
+                                               Style="{StaticResource ButtonStyle}"
+                                               Padding="10,5"
+                                               FontSize="12"/>
+                                        <Button Content="❌ Remove" 
+                                               Command="{Binding DataContext.RemoveConnectionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                               CommandParameter="{Binding}"
+                                               Background="#dc3545" 
+                                               Foreground="White"
+                                               Style="{StaticResource ButtonStyle}"
+                                               Padding="10,5"
+                                               FontSize="12"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Action Buttons -->
+        <Border Grid.Row="2" Background="#F8F9FA" BorderBrush="#E9ECEF" BorderThickness="0,1,0,0" Padding="20,15">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="🔍 Start Monitoring" 
+                       Command="{Binding StartMonitoringCommand}"
+                       Background="#17a2b8" 
+                       Foreground="White"
+                       Style="{StaticResource ButtonStyle}"/>
+                <Button Content="🛑 Stop Monitoring" 
+                       Command="{Binding StopMonitoringCommand}"
+                       Background="#dc3545" 
+                       Foreground="White"
+                       Style="{StaticResource ButtonStyle}"/>
+                <Button Content="⚙️ Settings" 
+                       Command="{Binding OpenSettingsCommand}"
+                       Background="#6c757d" 
+                       Foreground="White"
+                       Style="{StaticResource ButtonStyle}"/>
+                <Button Content="🔄 Refresh" 
+                       Command="{Binding RefreshCommand}"
+                       Background="#ffc107" 
+                       Foreground="#212529"
+                       Style="{StaticResource ButtonStyle}"/>
+                <Button Content="📋 Reload Settings" 
+                       Command="{Binding ReloadSettingsCommand}"
+                       Background="#6f42c1" 
+                       Foreground="White"
+                       Style="{StaticResource ButtonStyle}"/>
+                <Button Content="📋 Logs" 
+                       Command="{Binding OpenLogsCommand}"
+                       Background="#fd7e14" 
+                       Foreground="White"
+                       Style="{StaticResource ButtonStyle}"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

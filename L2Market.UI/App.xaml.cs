@@ -22,6 +22,8 @@ namespace L2Market.UI
     public partial class App : Application
     {
         private ServiceProvider? _serviceProvider;
+        
+        public ServiceProvider? ServiceProvider => _serviceProvider;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -32,33 +34,36 @@ namespace L2Market.UI
             ConfigureServices(services);
             _serviceProvider = services.BuildServiceProvider();
 
-            // Force creation of services to ensure subscriptions happen
+            // Force creation of LogsViewModel first
+            _ = _serviceProvider.GetRequiredService<LogsViewModel>();
+            
+            // Force creation of global services only
             _ = _serviceProvider.GetRequiredService<UiEventHandler>();
-            _ = _serviceProvider.GetRequiredService<IPacketParserService>();
             
-            // Force creation of market services to ensure subscriptions happen
-            _ = _serviceProvider.GetRequiredService<PrivateStoreService>();
-            _ = _serviceProvider.GetRequiredService<CommissionService>();
-            _ = _serviceProvider.GetRequiredService<WorldExchangeService>();
-            _ = _serviceProvider.GetRequiredService<MarketManagerService>();
-            
-            // Force creation of tracking services
+            // Force creation of tracking services (these are Singleton)
             _ = _serviceProvider.GetRequiredService<TrackingService>();
             _ = _serviceProvider.GetRequiredService<NotificationService>();
             
-            // Force creation of MarketWindowViewModel to ensure subscriptions are active
-            _ = _serviceProvider.GetRequiredService<MarketWindowViewModel>();
+            // MarketWindowViewModel will be created when MarketWindow is opened
 
-            // Create and show main window
-            var mainWindow = new MainWindow
+            // Create and show connections window
+            var connectionsViewModel = new ConnectionsViewModel(
+                _serviceProvider.GetRequiredService<IConnectionManager>(),
+                _serviceProvider.GetRequiredService<IMultiProcessMonitor>(),
+                _serviceProvider.GetRequiredService<IConfigurationService>(),
+                _serviceProvider.GetRequiredService<ILogger<ConnectionsViewModel>>(),
+                _serviceProvider.GetRequiredService<LogsViewModel>(),
+                _serviceProvider);
+                
+            var connectionsWindow = new ConnectionsWindow
             {
-                DataContext = _serviceProvider.GetRequiredService<MainViewModel>()
+                DataContext = connectionsViewModel
             };
             
             // Store service provider in application resources for access from ViewModels
             Current.Resources["ServiceProvider"] = _serviceProvider;
             
-            mainWindow.Show();
+            connectionsWindow.Show();
         }
 
         private void ConfigureServices(IServiceCollection services)
@@ -73,12 +78,24 @@ namespace L2Market.UI
             services.AddDomain();
             services.AddInfrastructure();
             services.AddCore();
+            
+            // Override ConnectionManager with UI Dispatcher
+            services.AddSingleton<IConnectionManager>(provider =>
+            {
+                var logger = provider.GetRequiredService<ILogger<ConnectionManager>>();
+                return new ConnectionManager(logger, action => Application.Current.Dispatcher.Invoke(action));
+            });
 
                 // Register UI
             services.AddTransient<SettingsWindow>();
             services.AddTransient<MainViewModel>();
+            services.AddTransient<ConnectionsWindow>();
+            services.AddSingleton<ConnectionsViewModel>();
+            services.AddTransient<ConnectionMarketWindow>();
             services.AddTransient<MarketWindow>();
-            services.AddSingleton<MarketWindowViewModel>();
+            services.AddScoped<MarketWindowViewModel>();
+            services.AddTransient<LogsWindow>();
+            services.AddSingleton<LogsViewModel>();
 
             // Register UI event handler (uses subscriptions) - Singleton to ensure single instance
             services.AddSingleton<UiEventHandler>();

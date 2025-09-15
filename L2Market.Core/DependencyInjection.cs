@@ -18,9 +18,9 @@ namespace L2Market.Core
             
             // Register services
             services.AddScoped<IApplicationService, ApplicationService>();
-            services.AddScoped<IPacketParserService, PacketParserService>();
             
-            // Register market services
+            // Register market services - Scoped for each connection
+            // These will be created with ProcessId in ConnectionScope
             services.AddScoped<PrivateStoreService>();
             services.AddScoped<CommissionService>();
             services.AddScoped<WorldExchangeService>();
@@ -29,10 +29,26 @@ namespace L2Market.Core
             // Register tracking services
             services.AddSingleton<TrackingService>();
             services.AddSingleton<NotificationService>();
-            services.AddSingleton<MarketQueryService>();
+            services.AddScoped<MarketQueryService>(); // Scoped for each connection
             
-            // Register command service
+            // Register command service - will be created per connection
             services.AddScoped<ICommandService, CommandService>();
+            
+            // Multi-connection services
+            services.AddSingleton<IConnectionManager, ConnectionManager>();
+            services.AddSingleton<IMultiProcessMonitor, MultiProcessMonitor>();
+            
+            // Connection scope factory
+            services.AddTransient<ConnectionScope>();
+            
+            // Local event bus - Scoped for each connection
+            services.AddScoped<ILocalEventBus, LocalEventBus>();
+            
+            // Packet parser - Scoped for each connection
+            services.AddScoped<IPacketParserService, PacketParserService>();
+            
+            // Connection event router - Singleton for routing global events
+            services.AddSingleton<ConnectionEventRouter>();
             
             // All event handling is done via subscriptions, not DI handlers
             

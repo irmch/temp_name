@@ -48,18 +48,41 @@ namespace L2Market.Infrastructure.NamedPipeServices
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[TEST] NamedPipeService starting - EventBus test"));
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] Starting server for PID: {processId}"));
                 
+                // Check if server is already running for this process
+                if (_serverTask != null && !_serverTask.IsCompleted)
+                {
+                    _logger.LogWarning("NamedPipe server is already running for PID: {ProcessId}", processId);
+                    await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] Server already running for PID: {processId}"));
+                    return;
+                }
+                
+                // Stop any existing server before starting new one
+                if (_serverTask != null)
+                {
+                    _logger.LogDebug("Stopping existing server before starting new one for PID: {ProcessId}", processId);
+                    StopServer();
+                    await Task.Delay(100); // Small delay to ensure cleanup
+                }
+                
                 _cancellationTokenSource?.Cancel();
                 _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                
+                // Add a timeout to prevent premature cancellation
+                _cancellationTokenSource.CancelAfter(TimeSpan.FromHours(24)); // 24 hour timeout
                 
                 var pipeName = $"{processId}";
                 
                 _logger.LogDebug("Creating pipe: {PipeName}", pipeName);
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] Creating pipe: {pipeName}"));
                 
+                // Start server in background - DON'T await it!
                 _serverTask = Task.Run(() => ServerLoopAsync(pipeName, _cancellationTokenSource.Token));
                 
-                _logger.LogInformation("NamedPipe server started successfully");
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] Server started successfully"));
+                _logger.LogInformation("NamedPipe server started successfully (running in background)");
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] Server started successfully (running in background)"));
+                
+                // Give server a moment to initialize
+                await Task.Delay(100, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -170,15 +193,17 @@ namespace L2Market.Infrastructure.NamedPipeServices
             try
             {
                 var settings = _configurationService.Settings.NamedPipe;
-                _logger.LogInformation("Starting main loop for pipe: {PipeName}", pipeName);
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] Starting main loop for pipe: {pipeName}"));
+                _logger.LogInformation("Starting main loop for pipe: {PipeName} with buffer size: {BufferSize}", pipeName, settings.BufferSize);
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] Starting main loop for pipe: {pipeName} with buffer size: {settings.BufferSize} bytes"));
                 
                 using var server = new NamedPipeServerStream(
                     pipeName,
                     PipeDirection.InOut,
                     1,
                     PipeTransmissionMode.Message,
-                    PipeOptions.Asynchronous
+                    PipeOptions.Asynchronous,
+                    settings.BufferSize,
+                    settings.BufferSize
                 );
 
                 _logger.LogDebug("Waiting for client connection to pipe {PipeName} (timeout: {Timeout}s)...", pipeName, settings.ConnectionTimeout.TotalSeconds);
@@ -239,6 +264,8 @@ namespace L2Market.Infrastructure.NamedPipeServices
                     _writer = new StreamWriter(server) { AutoFlush = true };
 
                     await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] Подключение установлено. Готов к обмену данными."));
+                    await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] CancellationToken.IsCancellationRequested: {ct.IsCancellationRequested}"));
+                    await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] Server.IsConnected: {server.IsConnected}"));
 
                     int messageCount = 0;
                     var startTime = DateTime.Now;
@@ -247,7 +274,19 @@ namespace L2Market.Infrastructure.NamedPipeServices
                     {
                         try
                         {
-                            var line = await reader.ReadLineAsync();
+                            // Use ReadLineAsync with proper cancellation handling
+                            var readTask = reader.ReadLineAsync();
+                            var timeoutTask = Task.Delay(TimeSpan.FromSeconds(30), ct);
+                            var completedTask = await Task.WhenAny(readTask, timeoutTask);
+                            
+                            if (completedTask == timeoutTask)
+                            {
+                                _logger.LogWarning("Read timeout, checking connection...");
+                                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] Read timeout, checking connection..."));
+                                continue;
+                            }
+                            
+                            var line = await readTask;
                             if (line == null) 
                             {
                                 _logger.LogInformation("Client disconnected");
@@ -260,6 +299,7 @@ namespace L2Market.Infrastructure.NamedPipeServices
                             if (!string.IsNullOrWhiteSpace(line))
                             {
                                 _logger.LogDebug("NamedPipeService received data: {Data}", line);
+                                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] Received: {line}"));
                                 
                                 // Send event for packet parsing
                                 await _eventBus.PublishAsync(new PipeDataReceivedEvent(line));
@@ -301,6 +341,26 @@ namespace L2Market.Infrastructure.NamedPipeServices
                         {
                             _logger.LogError(ex, "Unexpected error in pipe communication");
                             await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] Unexpected error: {ex.Message}"));
+                            
+                            // Check for specific error code 109
+                            if (ex.Message.Contains("109") || ex.Message.Contains("Failed to get the result of the asynchronous operation"))
+                            {
+                                _logger.LogError("Error code 109 detected - this is likely a cancellation token issue");
+                                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] Error code 109 detected - this is likely a cancellation token issue"));
+                                
+                                // Check if cancellation was requested
+                                if (ct.IsCancellationRequested)
+                                {
+                                    _logger.LogInformation("Cancellation was requested, stopping server");
+                                    await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[NamedPipeService] Cancellation was requested, stopping server"));
+                                    break;
+                                }
+                                
+                                // Try to continue instead of breaking
+                                await Task.Delay(1000, ct);
+                                continue;
+                            }
+                            
                             break;
                         }
                     }
@@ -346,6 +406,11 @@ namespace L2Market.Infrastructure.NamedPipeServices
                 _cancellationTokenSource?.Dispose();
                 _writer?.Dispose();
             }
+        }
+
+        public Task SendCommandAsync(string hex, uint processId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

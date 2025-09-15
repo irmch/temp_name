@@ -15,24 +15,39 @@ namespace L2Market.Core.Services
     /// </summary>
     public class PacketParserService : IPacketParserService
     {
-        private readonly IEventBus _eventBus;
+        private readonly ILocalEventBus _localEventBus;
+        private readonly ILogger<PacketParserService> _logger;
+        private readonly uint _processId;
         private bool _isRunning;
 
         public bool IsRunning => _isRunning;
 
-        public PacketParserService(IEventBus eventBus)
+        public PacketParserService(ILocalEventBus localEventBus, ILogger<PacketParserService> logger, uint processId = 0)
         {
-            _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
+            _localEventBus = localEventBus ?? throw new ArgumentNullException(nameof(localEventBus));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _processId = processId;
             
             // Подписываемся на события получения данных от NamedPipe
-            _eventBus.Subscribe<PipeDataReceivedEvent>(async e =>
+            _localEventBus.Subscribe<PipeDataReceivedEvent>(async e =>
             {
+                _logger.LogDebug("PacketParserService received data: {Data}", e.Data);
+                await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received data: {e.Data}"));
+                
                 // Убираем проверку _isRunning - обрабатываем все пакеты
                 var packet = TryParsePacket(e.Data ?? string.Empty);
                 if (packet != null)
                 {
+                    _logger.LogDebug("PacketParserService parsed packet: {PacketType}", packet.GetType().Name);
+                    await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Parsed packet: {packet.GetType().Name}"));
+                    
                     // Обрабатываем пакеты прямо здесь
                     await ProcessPacket(packet);
+                }
+                else
+                {
+                    _logger.LogDebug("PacketParserService could not parse data: {Data}", e.Data);
+                    await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Could not parse data: {e.Data}"));
                 }
             });
         }
@@ -41,14 +56,14 @@ namespace L2Market.Core.Services
         {
             if (_isRunning) 
             {
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent("[PacketParserService] Packet parser service already running"));
+                await _localEventBus.PublishAsync(new LogMessageReceivedEvent("[PacketParserService] Packet parser service already running"));
                 return;
             }
             
             _isRunning = true;
-            await _eventBus.PublishAsync(new LogMessageReceivedEvent("[TEST] PacketParserService starting - EventBus test"));
-            await _eventBus.PublishAsync(new LogMessageReceivedEvent("[PacketParserService] Packet parser service started - IsRunning = true"));
-            await _eventBus.PublishAsync(new LogMessageReceivedEvent("[DEBUG] PacketParserService started successfully"));
+            await _localEventBus.PublishAsync(new LogMessageReceivedEvent("[TEST] PacketParserService starting - EventBus test"));
+            await _localEventBus.PublishAsync(new LogMessageReceivedEvent("[PacketParserService] Packet parser service started - IsRunning = true"));
+            await _localEventBus.PublishAsync(new LogMessageReceivedEvent("[DEBUG] PacketParserService started successfully"));
         }
 
         public void Stop()
@@ -56,7 +71,7 @@ namespace L2Market.Core.Services
             if (!_isRunning) return;
             
             _isRunning = false;
-            _eventBus.PublishAsync(new LogMessageReceivedEvent("[PacketParserService] Packet parser service stopped"));
+            _localEventBus.PublishAsync(new LogMessageReceivedEvent("[PacketParserService] Packet parser service stopped"));
         }
 
         // ProcessPacketDataAsync removed - now handled via subscription
@@ -65,7 +80,20 @@ namespace L2Market.Core.Services
         {
             try
             {
-                var obj = JsonNode.Parse(data)?.AsObject();
+                // Сначала пытаемся декодировать base64
+                string jsonData;
+                try
+                {
+                    byte[] base64Bytes = Convert.FromBase64String(data);
+                    jsonData = System.Text.Encoding.UTF8.GetString(base64Bytes);
+                }
+                catch (FormatException)
+                {
+                    // Если не base64, используем данные как есть (для обратной совместимости)
+                    jsonData = data;
+                }
+
+                var obj = JsonNode.Parse(jsonData)?.AsObject();
                 if (obj == null) return null;
 
                 var direction = obj["direction"]?.ToString() ?? "";
@@ -92,7 +120,7 @@ namespace L2Market.Core.Services
             }
             catch (Exception ex)
             {
-                _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] JSON parsing error: {ex.Message}"));
+                _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] JSON parsing error: {ex.Message}"));
                 return null;
             }
         }
@@ -110,7 +138,7 @@ namespace L2Market.Core.Services
             }
             catch (Exception ex)
             {
-                _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Error converting hex string to bytes: {ex.Message}"));
+                _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Error converting hex string to bytes: {ex.Message}"));
                 return Array.Empty<byte>();
             }
         }
@@ -146,11 +174,21 @@ namespace L2Market.Core.Services
                     case 0x59 when packet.Direction == "C":
                         await ProcessValidatePositionPacket(packet);
                         break;
+                    // Market packets
+                    case 0x27 when packet.Direction == "S": // 39 - ExPrivateStoreSearchItemPacket
+                        await ProcessPrivateStoreSearchItemPacket(packet);
+                        break;
+                    case 0xCE when packet.Direction == "S": // 206 - ExResponseCommissionListPacket
+                        await ProcessCommissionListPacket(packet);
+                        break;
+                    case 0x9D when packet.Direction == "S": // WorldExchangeItemListPacket
+                        await ProcessWorldExchangeItemListPacket(packet);
+                        break;
                     case 0x18 when packet.Direction == "S":
                         // StatusUpdate packet - log occasionally to reduce spam
                         if (DateTime.Now.Second % 10 == 0) // Log every 10 seconds
                         {
-                            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] StatusUpdate packet (0x18) - Size: {packet.Size}"));
+                            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] StatusUpdate packet (0x18) - Size: {packet.Size}"));
                         }
                         break;
                     case 0x32 when packet.Direction == "S":
@@ -172,7 +210,7 @@ namespace L2Market.Core.Services
             }
             catch (Exception ex)
             {
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Error processing packet {packet.FullId}: {ex.Message}"));
+                await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Error processing packet {packet.FullId}: {ex.Message}"));
             }
         }
 
@@ -180,42 +218,42 @@ namespace L2Market.Core.Services
 
         private async Task ProcessSkillListPacket(GamePacket packet)
         {
-            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received skill list packet (0x5F)"));
+            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received skill list packet (0x5F)"));
         }
 
         private async Task ProcessMagicSkillUsePacket(GamePacket packet)
         {
-            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received magic skill use packet (0x48)"));
+            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received magic skill use packet (0x48)"));
         }
 
         private async Task ProcessRequestMagicSkillUsePacket(GamePacket packet)
         {
-            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received request magic skill use packet (0x39)"));
+            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received request magic skill use packet (0x39)"));
         }
 
         private async Task ProcessRequestActionUsePacket(GamePacket packet)
         {
-            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received request action use packet (0x56)"));
+            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received request action use packet (0x56)"));
         }
 
         private async Task ProcessNpcInfoPacket(GamePacket packet)
         {
-            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received NPC info packet (0x0C)"));
+            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received NPC info packet (0x0C)"));
         }
 
         private async Task ProcessDeleteObjectPacket(GamePacket packet)
         {
-            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received delete object packet (0x08)"));
+            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received delete object packet (0x08)"));
         }
 
         private async Task ProcessDiePacket(GamePacket packet)
         {
-            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received die packet (0x00)"));
+            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received die packet (0x00)"));
         }
 
         private async Task ProcessValidatePositionPacket(GamePacket packet)
         {
-            await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received validate position packet (0x59)"));
+            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received validate position packet (0x59)"));
         }
 
         private Task ProcessCharInfoPacket(GamePacket packet)
@@ -229,14 +267,14 @@ namespace L2Market.Core.Services
             try
             {
                 var storePacket = ExPrivateStoreSearchItemPacket.FromBytes(packet.Data);
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PrivateStore] Page {storePacket.Page}/{storePacket.MaxPage}, Items: {storePacket.Items.Count}"));
+                await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PrivateStore] Page {storePacket.Page}/{storePacket.MaxPage}, Items: {storePacket.Items.Count}"));
                 
-                // Публикуем событие для PrivateStoreService
-                await _eventBus.PublishAsync(new PrivateStoreUpdatedEvent(storePacket.Items));
+                // Публикуем событие в LocalEventBus для этого подключения
+                await _localEventBus.PublishAsync(new PrivateStoreUpdatedEvent(storePacket.Items.ToList(), _processId));
             }
             catch (Exception ex)
             {
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Error processing ExPrivateStoreSearchItem packet: {ex.Message}"));
+                await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Error processing ExPrivateStoreSearchItem packet: {ex.Message}"));
             }
         }
 
@@ -245,14 +283,14 @@ namespace L2Market.Core.Services
             try
             {
                 var worldExchangePacket = WorldExchangeItemListPacket.FromBytes(packet.Data);
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[WorldExchange] Category {worldExchangePacket.Category}, Page {worldExchangePacket.Page}, Items: {worldExchangePacket.Items.Count}"));
+                await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[WorldExchange] Category {worldExchangePacket.Category}, Page {worldExchangePacket.Page}, Items: {worldExchangePacket.Items.Count}"));
                 
                 // Публикуем событие для WorldExchangeService
-                await _eventBus.PublishAsync(new WorldExchangeUpdatedEvent(worldExchangePacket.Items, worldExchangePacket.Category));
+                await _localEventBus.PublishAsync(new WorldExchangeUpdatedEvent(worldExchangePacket.Items.ToList(), _processId, worldExchangePacket.Category));
             }
             catch (Exception ex)
             {
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Error processing WorldExchangeItemList packet: {ex.Message}"));
+                await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Error processing WorldExchangeItemList packet: {ex.Message}"));
             }
         }
 
@@ -261,17 +299,39 @@ namespace L2Market.Core.Services
             try
             {
                 var commissionPacket = ExResponseCommissionListPacket.FromBytes(packet.Data);
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[Commission] ReplyType {commissionPacket.ReplyType}, Chunk {commissionPacket.ChunkId}, Items: {commissionPacket.Items.Count}"));
+                await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[Commission] ReplyType {commissionPacket.ReplyType}, Chunk {commissionPacket.ChunkId}, Items: {commissionPacket.Items.Count}"));
                 
                 // Публикуем событие для CommissionService
-                await _eventBus.PublishAsync(new CommissionUpdatedEvent(commissionPacket.Items));
+                await _localEventBus.PublishAsync(new CommissionUpdatedEvent(commissionPacket.Items.ToList(), _processId));
             }
             catch (Exception ex)
             {
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Error processing ExResponseCommissionList packet: {ex.Message}"));
+                await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Error processing ExResponseCommissionList packet: {ex.Message}"));
             }
         }
 
+        private async Task ProcessPrivateStoreSearchItemPacket(GamePacket packet)
+        {
+            try
+            {
+                var privateStorePacket = ExPrivateStoreSearchItemPacket.FromBytes(packet.Data);
+                await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PrivateStore] Items: {privateStorePacket.Items.Count}"));
+                
+                // Публикуем событие для PrivateStoreService
+                await _localEventBus.PublishAsync(new PrivateStoreUpdatedEvent(privateStorePacket.Items.ToList(), _processId));
+            }
+            catch (Exception ex)
+            {
+                await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Error processing ExPrivateStoreSearchItem packet: {ex.Message}"));
+            }
+        }
+
+        private async Task ProcessCommissionListPacket(GamePacket packet)
+        {
+            await ProcessExResponseCommissionListPacket(packet);
+        }
+
         #endregion
+
     }
 }

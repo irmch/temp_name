@@ -15,7 +15,8 @@ namespace L2Market.Core.Services
     /// </summary>
     public class PrivateStoreService : IMarketService, IDisposable
     {
-        private readonly IEventBus _eventBus;
+        private readonly ILocalEventBus _eventBus;
+        private readonly uint _processId;
         private readonly ConcurrentDictionary<string, PrivateStoreItem> _items;
         private readonly ConcurrentDictionary<int, HashSet<string>> _itemsByItemId;
         private readonly ConcurrentDictionary<string, DateTime> _itemLastSeen;
@@ -25,9 +26,10 @@ namespace L2Market.Core.Services
         // Время жизни предмета без обновлений (5 минут)
         private static readonly TimeSpan ItemLifetime = TimeSpan.FromMinutes(5);
 
-        public PrivateStoreService(IEventBus eventBus)
+        public PrivateStoreService(ILocalEventBus eventBus, uint processId = 0)
         {
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
+            _processId = processId;
             _items = new ConcurrentDictionary<string, PrivateStoreItem>();
             _itemsByItemId = new ConcurrentDictionary<int, HashSet<string>>();
             _itemLastSeen = new ConcurrentDictionary<string, DateTime>();
@@ -247,7 +249,7 @@ namespace L2Market.Core.Services
                 {
                     await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[PrivateStoreService] Removed {removedCount} expired items"));
                     // Публикуем событие об обновлении для UI
-                    await _eventBus.PublishAsync(new PrivateStoreUpdatedEvent(new List<PrivateStoreItem>()));
+                    await _eventBus.PublishAsync(new PrivateStoreUpdatedEvent(new List<PrivateStoreItem>(), _processId));
                 }
             }
             catch (Exception ex)
@@ -497,18 +499,4 @@ namespace L2Market.Core.Services
         public int WithVisualId { get; set; }
     }
 
-    /// <summary>
-    /// Событие обновления частного магазина
-    /// </summary>
-    public class PrivateStoreUpdatedEvent
-    {
-        public IReadOnlyList<PrivateStoreItem> Items { get; }
-        public DateTime Timestamp { get; }
-
-        public PrivateStoreUpdatedEvent(IReadOnlyList<PrivateStoreItem> items)
-        {
-            Items = items ?? throw new ArgumentNullException(nameof(items));
-            Timestamp = DateTime.UtcNow;
-        }
-    }
 }

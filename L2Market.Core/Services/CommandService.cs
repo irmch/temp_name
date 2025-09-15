@@ -13,21 +13,25 @@ namespace L2Market.Core.Services
     /// <summary>
     /// Сервис для отправки команд через NamedPipe
     /// </summary>
-    public class CommandService : ICommandService
+    public class CommandService : ICommandService, IDisposable
     {
         private readonly INamedPipeService _pipeService;
-        private readonly IEventBus _eventBus;
+        private readonly ILocalEventBus _eventBus;
         private readonly ILogger<CommandService> _logger;
+        private readonly uint _processId;
 
         public CommandService(
             INamedPipeService pipeService,
-            IEventBus eventBus,
-            ILogger<CommandService> logger)
+            ILocalEventBus eventBus,
+            ILogger<CommandService> logger,
+            uint processId = 0)
         {
             _pipeService = pipeService ?? throw new ArgumentNullException(nameof(pipeService));
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _processId = processId;
         }
+
 
         /// <summary>
         /// Отправляет команду покупки предмета в комиссии
@@ -45,14 +49,13 @@ namespace L2Market.Core.Services
 
                 string hex = PacketHexHelper.ToHex(cmd, Encoding.UTF8, true);
                 
-                // Логируем hex данные после преобразования
+                // Логируем данные после преобразования
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent(
-                    $"[CommandService] Commission buy command hex data: {hex}"));
+                    $"[CommandService] Commission buy command hex: {hex}"));
                 
-                await _pipeService.SendCommandAsync(hex);
-                
+                await _pipeService.SendCommandAsync(hex, _processId);
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent(
-                    $"[CommandService] Sent commission buy command for item type {itemType}"));
+                    $"[CommandService] Commission buy command sent successfully"));
             }
             catch (Exception ex)
             {
@@ -80,14 +83,13 @@ namespace L2Market.Core.Services
 
                 string hex = PacketHexHelper.ToHex(cmd, Encoding.UTF8, true);
                 
-                // Логируем hex данные после преобразования
+                // Логируем данные после преобразования
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent(
-                    $"[CommandService] Private store buy command hex data: {hex}"));
+                    $"[CommandService] Private store buy command hex: {hex}"));
                 
-                await _pipeService.SendCommandAsync(hex);
-                
+                await _pipeService.SendCommandAsync(hex, _processId);
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent(
-                    $"[CommandService] Sent private store buy command for item type {itemType}, vendor {vendorObjectId}"));
+                    $"[CommandService] Private store buy command sent successfully"));
             }
             catch (Exception ex)
             {
@@ -116,14 +118,13 @@ namespace L2Market.Core.Services
 
                 string hex = PacketHexHelper.ToHex(cmd, Encoding.UTF8, true);
                 
-                // Логируем hex данные после преобразования
+                // Логируем данные после преобразования
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent(
-                    $"[CommandService] World exchange buy command hex data: {hex}"));
+                    $"[CommandService] World exchange buy command hex: {hex}"));
                 
-                await _pipeService.SendCommandAsync(hex);
-                
+                await _pipeService.SendCommandAsync(hex, _processId);
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent(
-                    $"[CommandService] Sent world exchange buy command for item type {itemType}, exchange {worldExchangeId}"));
+                    $"[CommandService] World exchange buy command sent successfully"));
             }
             catch (Exception ex)
             {
@@ -153,14 +154,13 @@ namespace L2Market.Core.Services
 
                 string hex = PacketHexHelper.ToHexUtf16Le(cmd, false);
                 
-                // Логируем hex данные после преобразования
+                // Логируем данные после преобразования
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent(
-                    $"[CommandService] SAY2 command hex data: {hex}"));
+                    $"[CommandService] SAY2 command hex: {hex}"));
                 
-                await _pipeService.SendCommandAsync(hex);
-                
+                await _pipeService.SendCommandAsync(hex, _processId);
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent(
-                    $"[CommandService] Sent SAY2 command: '{text}' (Type: {chatType})"));
+                    $"[CommandService] SAY2 command sent successfully"));
             }
             catch (Exception ex)
             {
@@ -186,9 +186,8 @@ namespace L2Market.Core.Services
                 string hex = PacketHexHelper.ToHex(command, Encoding.Unicode, false);
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommandService] Bypass command hex: {hex}"));
 
-                await _pipeService.SendCommandAsync(hex);
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent(
-                    $"[CommandService] Bypass command sent successfully: {command.Command}"));
+                await _pipeService.SendCommandAsync(hex, _processId);
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommandService] Bypass command sent successfully"));
             }
             catch (Exception ex)
             {
@@ -213,9 +212,8 @@ namespace L2Market.Core.Services
                 string hex = PacketHexHelper.ToHex(command, Encoding.UTF8, true);
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommandService] Action command hex: {hex}"));
 
-                await _pipeService.SendCommandAsync(hex);
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent(
-                    $"[CommandService] Action command sent successfully: {command}"));
+                await _pipeService.SendCommandAsync(hex, _processId);
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommandService] Action command sent successfully"));
             }
             catch (Exception ex)
             {
@@ -239,9 +237,8 @@ namespace L2Market.Core.Services
                 string hex = PacketHexHelper.ToHex(command, Encoding.UTF8, true);
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommandService] Private store item list command hex (ItemType={itemType}): {hex}"));
 
-                await _pipeService.SendCommandAsync(hex);
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent(
-                    $"[CommandService] Private store item list command sent successfully (ItemType={itemType}): {command}"));
+                await _pipeService.SendCommandAsync(hex, _processId);
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommandService] Private store item list command sent successfully"));
             }
             catch (Exception ex)
             {
@@ -265,9 +262,8 @@ namespace L2Market.Core.Services
                 string hex = PacketHexHelper.ToHex(command, Encoding.UTF8, true);
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommandService] Private store window command hex: {hex}"));
 
-                await _pipeService.SendCommandAsync(hex);
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent(
-                    $"[CommandService] Private store window command sent successfully: {command}"));
+                await _pipeService.SendCommandAsync(hex, _processId);
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommandService] Private store window command sent successfully"));
             }
             catch (Exception ex)
             {
@@ -291,9 +287,8 @@ namespace L2Market.Core.Services
                 string hex = PacketHexHelper.ToHex(command, Encoding.UTF8, true);
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommandService] World exchange search command hex (ItemType=0x{itemType:X2}, Unknown2=0x{unknown2:X4}): {hex}"));
 
-                await _pipeService.SendCommandAsync(hex);
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent(
-                    $"[CommandService] World exchange search command sent successfully (ItemType=0x{itemType:X2}, Unknown2=0x{unknown2:X4}): {command}"));
+                await _pipeService.SendCommandAsync(hex, _processId);
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommandService] World exchange search command sent successfully"));
             }
             catch (Exception ex)
             {
@@ -301,6 +296,12 @@ namespace L2Market.Core.Services
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent(
                     $"[CommandService] Error sending world exchange search command: {ex.Message}"));
             }
+        }
+
+
+        public void Dispose()
+        {
+            // Никаких ресурсов для освобождения
         }
     }
 }

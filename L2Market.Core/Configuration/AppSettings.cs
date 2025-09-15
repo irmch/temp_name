@@ -22,6 +22,7 @@ namespace L2Market.Core.Configuration
         public int MaxRetries { get; set; } = 3;
         public TimeSpan ReadTimeout { get; set; } = TimeSpan.FromSeconds(1);
         public TimeSpan ServerShutdownTimeout { get; set; } = TimeSpan.FromSeconds(5);
+        public int BufferSize { get; set; } = 32768; // 32KB по умолчанию
     }
 
     /// <summary>

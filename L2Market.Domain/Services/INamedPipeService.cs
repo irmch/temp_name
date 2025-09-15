@@ -40,5 +40,13 @@ namespace L2Market.Domain.Services
         /// <param name="hex">Hex данные для отправки</param>
         /// <returns>Задача отправки команды</returns>
         Task SendCommandAsync(string hex);
+
+        /// <summary>
+        /// Отправляет команду через Named Pipe в конкретный процесс
+        /// </summary>
+        /// <param name="hex">Hex данные для отправки</param>
+        /// <param name="processId">ID процесса</param>
+        /// <returns>Задача отправки команды</returns>
+        Task SendCommandAsync(string hex, uint processId);
     }
 }

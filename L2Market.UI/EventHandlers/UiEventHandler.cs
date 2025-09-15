@@ -15,16 +15,28 @@ namespace L2Market.UI.EventHandlers
     {
         private readonly ILogger<UiEventHandler> _logger;
         private readonly IEventBus _eventBus;
+        private readonly LogsViewModel _logsViewModel;
 
-        public UiEventHandler(ILogger<UiEventHandler> logger, IEventBus eventBus)
+        public UiEventHandler(ILogger<UiEventHandler> logger, IEventBus eventBus, LogsViewModel logsViewModel)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
+            _logsViewModel = logsViewModel ?? throw new ArgumentNullException(nameof(logsViewModel));
             
             System.Diagnostics.Debug.WriteLine("[DEBUG] UiEventHandler: Constructor called - subscribing to events");
             
             // Subscribe to all events
             SubscribeToEvents();
+            
+            // Add test message to verify UiEventHandler is working
+            _logsViewModel.AddLogEntry("🔧 UiEventHandler initialized and subscribed to events", "Information");
+            
+            // Test EventBus directly
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(1000); // Wait 1 second
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent("[TEST] UiEventHandler: Direct EventBus test message"));
+            });
             
             System.Diagnostics.Debug.WriteLine("[DEBUG] UiEventHandler: Constructor completed - all subscriptions done");
         }
@@ -56,14 +68,7 @@ namespace L2Market.UI.EventHandlers
         {
             try
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainWindow = Application.Current.MainWindow as MainWindow;
-                    if (mainWindow?.DataContext is MainViewModel viewModel)
-                    {
-                        viewModel.LogMessage($"🚀 DLL injection started for process ID: {domainEvent.ProcessId}");
-                    }
-                });
+                _logsViewModel.AddLogEntry($"🚀 DLL injection started for process ID: {domainEvent.ProcessId}", "Information");
             }
             catch (Exception ex)
             {
@@ -76,14 +81,7 @@ namespace L2Market.UI.EventHandlers
         {
             try
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainWindow = Application.Current.MainWindow as MainWindow;
-                    if (mainWindow?.DataContext is MainViewModel viewModel)
-                    {
-                        viewModel.LogMessage($"✅ DLL injection completed for process: {domainEvent.ProcessName}");
-                    }
-                });
+                _logsViewModel.AddLogEntry($"✅ DLL injection completed for process: {domainEvent.ProcessName}", "Information");
             }
             catch (Exception ex)
             {
@@ -96,14 +94,7 @@ namespace L2Market.UI.EventHandlers
         {
             try
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainWindow = Application.Current.MainWindow as MainWindow;
-                    if (mainWindow?.DataContext is MainViewModel viewModel)
-                    {
-                        viewModel.LogMessage($"❌ DLL injection failed for process ID: {domainEvent.ProcessId}. Error: {domainEvent.ErrorMessage}");
-                    }
-                });
+                _logsViewModel.AddLogEntry($"❌ DLL injection failed for process ID: {domainEvent.ProcessId}. Error: {domainEvent.ErrorMessage}", "Error");
             }
             catch (Exception ex)
             {
@@ -116,14 +107,7 @@ namespace L2Market.UI.EventHandlers
         {
             try
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainWindow = Application.Current.MainWindow as MainWindow;
-                    if (mainWindow?.DataContext is MainViewModel viewModel)
-                    {
-                        viewModel.LogMessage($"🔍 Searching for process: {domainEvent.ProcessName}");
-                    }
-                });
+                _logsViewModel.AddLogEntry($"🔍 Searching for process: {domainEvent.ProcessName}", "Information");
             }
             catch (Exception ex)
             {
@@ -136,14 +120,7 @@ namespace L2Market.UI.EventHandlers
         {
             try
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainWindow = Application.Current.MainWindow as MainWindow;
-                    if (mainWindow?.DataContext is MainViewModel viewModel)
-                    {
-                        viewModel.LogMessage($"✅ Process found: {domainEvent.ProcessName} (PID: {domainEvent.ProcessId})");
-                    }
-                });
+                _logsViewModel.AddLogEntry($"✅ Process found: {domainEvent.ProcessName} (PID: {domainEvent.ProcessId})", "Information");
             }
             catch (Exception ex)
             {
@@ -156,14 +133,7 @@ namespace L2Market.UI.EventHandlers
         {
             try
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainWindow = Application.Current.MainWindow as MainWindow;
-                    if (mainWindow?.DataContext is MainViewModel viewModel)
-                    {
-                        viewModel.LogMessage($"❌ Process not found: {domainEvent.ProcessName}");
-                    }
-                });
+                _logsViewModel.AddLogEntry($"❌ Process not found: {domainEvent.ProcessName}", "Warning");
             }
             catch (Exception ex)
             {
@@ -176,14 +146,7 @@ namespace L2Market.UI.EventHandlers
         {
             try
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainWindow = Application.Current.MainWindow as MainWindow;
-                    if (mainWindow?.DataContext is MainViewModel viewModel)
-                    {
-                        viewModel.LogMessage($"🔄 Workflow started for process: {domainEvent.ProcessName}");
-                    }
-                });
+                _logsViewModel.AddLogEntry($"🔄 Workflow started for process: {domainEvent.ProcessName} (PID: {domainEvent.ProcessId})", "Information");
             }
             catch (Exception ex)
             {
@@ -196,14 +159,7 @@ namespace L2Market.UI.EventHandlers
         {
             try
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainWindow = Application.Current.MainWindow as MainWindow;
-                    if (mainWindow?.DataContext is MainViewModel viewModel)
-                    {
-                        viewModel.LogMessage($"✅ Workflow completed for process: {domainEvent.ProcessName}");
-                    }
-                });
+                _logsViewModel.AddLogEntry($"✅ Workflow completed for process: {domainEvent.ProcessName} (PID: {domainEvent.ProcessId}) in {domainEvent.Duration.TotalSeconds:F1}s", "Information");
             }
             catch (Exception ex)
             {
@@ -216,14 +172,7 @@ namespace L2Market.UI.EventHandlers
         {
             try
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainWindow = Application.Current.MainWindow as MainWindow;
-                    if (mainWindow?.DataContext is MainViewModel viewModel)
-                    {
-                        viewModel.LogMessage($"❌ Workflow failed for process: {domainEvent.ProcessName}. Error: {domainEvent.ErrorMessage}");
-                    }
-                });
+                _logsViewModel.AddLogEntry($"❌ Workflow failed for process: {domainEvent.ProcessName} (PID: {domainEvent.ProcessId}). Error: {domainEvent.ErrorMessage}", "Error");
             }
             catch (Exception ex)
             {
@@ -236,14 +185,7 @@ namespace L2Market.UI.EventHandlers
         {
             try
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainWindow = Application.Current.MainWindow as MainWindow;
-                    if (mainWindow?.DataContext is MainViewModel viewModel)
-                    {
-                        viewModel.LogMessage($"⏳ {domainEvent.StepName}: {domainEvent.Description}");
-                    }
-                });
+                _logsViewModel.AddLogEntry($"⏳ {domainEvent.StepName}: {domainEvent.Description}", "Information");
             }
             catch (Exception ex)
             {
@@ -256,14 +198,7 @@ namespace L2Market.UI.EventHandlers
         {
             try
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainWindow = Application.Current.MainWindow as MainWindow;
-                    if (mainWindow?.DataContext is MainViewModel viewModel)
-                    {
-                        viewModel.LogMessage($"📤 Sending command: {domainEvent.HexCommand}");
-                    }
-                });
+                _logsViewModel.AddLogEntry($"📤 Sending command: {domainEvent.HexCommand}", "Information");
             }
             catch (Exception ex)
             {
@@ -276,14 +211,7 @@ namespace L2Market.UI.EventHandlers
         {
             try
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainWindow = Application.Current.MainWindow as MainWindow;
-                    if (mainWindow?.DataContext is MainViewModel viewModel)
-                    {
-                        viewModel.LogMessage($"✅ Command sent successfully: {domainEvent.HexCommand}");
-                    }
-                });
+                _logsViewModel.AddLogEntry($"✅ Command sent successfully: {domainEvent.HexCommand}", "Information");
             }
             catch (Exception ex)
             {
@@ -296,14 +224,7 @@ namespace L2Market.UI.EventHandlers
         {
             try
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainWindow = Application.Current.MainWindow as MainWindow;
-                    if (mainWindow?.DataContext is MainViewModel viewModel)
-                    {
-                        viewModel.LogMessage($"❌ Command failed: {domainEvent.HexCommand}. Error: {domainEvent.ErrorMessage}");
-                    }
-                });
+                _logsViewModel.AddLogEntry($"❌ Command failed: {domainEvent.HexCommand}. Error: {domainEvent.ErrorMessage}", "Error");
             }
             catch (Exception ex)
             {
@@ -331,20 +252,9 @@ namespace L2Market.UI.EventHandlers
             {
                 System.Diagnostics.Debug.WriteLine($"[DEBUG] UiEventHandler: Received LogMessageReceivedEvent: {domainEvent.Message}");
                 
-                // Use Dispatcher to ensure we're on the UI thread
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainWindow = Application.Current.MainWindow as MainWindow;
-                    if (mainWindow?.DataContext is MainViewModel viewModel)
-                    {
-                        viewModel.LogMessage(domainEvent.Message);
-                        System.Diagnostics.Debug.WriteLine($"[DEBUG] UiEventHandler: Message sent to UI: {domainEvent.Message}");
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[UI ERROR] MainWindow or ViewModel is null. MainWindow: {mainWindow != null}, DataContext: {mainWindow?.DataContext != null}");
-                    }
-                });
+                // Send to LogsViewModel
+                _logsViewModel.AddLogEntry(domainEvent.Message, "Information");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] UiEventHandler: Message sent to LogsViewModel: {domainEvent.Message}");
             }
             catch (Exception ex)
             {

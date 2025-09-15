@@ -1,0 +1,261 @@
+<Window x:Class="L2Market.UI.Views.ConnectionMarketWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:L2Market.UI.Converters"
+        mc:Ignorable="d"
+        Title="L2Market - Market" 
+        Height="700" 
+        Width="1200"
+        WindowStartupLocation="CenterScreen"
+        Background="#F8F9FA">
+    
+    <Window.Resources>
+        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#212529"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+        
+        <Style x:Key="StatusStyle" TargetType="Border">
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+        
+        <!-- Boolean to Color Converter -->
+        <converters:BooleanToColorConverter x:Key="BooleanToColorConverter" 
+                                           TrueValue="#DC3545" 
+                                           FalseValue="#28A745"/>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header with Connection Info -->
+        <Border Grid.Row="0" Background="#343A40" Padding="20,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="🏪 L2Market - Market Data" 
+                              FontSize="24" 
+                              FontWeight="Bold" 
+                              Foreground="White"/>
+                    <TextBlock Text="{Binding ConnectionInfo.DisplayName}" 
+                              FontSize="16" 
+                              Foreground="#ADB5BD" 
+                              Margin="0,5,0,0"/>
+                    <TextBlock Text="{Binding ConnectionInfo.WindowTitle}" 
+                              FontSize="12" 
+                              Foreground="#6C757D" 
+                              Margin="0,2,0,0"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="{Binding ConnectionInfo.StatusColor}" Style="{StaticResource StatusStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding ConnectionInfo.StatusIcon}" FontSize="16" Margin="0,0,5,0"/>
+                            <TextBlock Text="{Binding ConnectionInfo.ConnectionStatus}" Foreground="White" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="{Binding ConnectionInfo.FormattedConnectedAt}" 
+                              Foreground="#ADB5BD" 
+                              VerticalAlignment="Center" 
+                              Margin="10,0,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Market Content -->
+        <Grid Grid.Row="1" Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Market Controls -->
+            <Border Grid.Row="0" Background="#E9ECEF" Padding="15,10" CornerRadius="4" Margin="0,0,0,15">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="📊 Market Status: " FontWeight="SemiBold" Foreground="#495057"/>
+                    <TextBlock Text="{Binding MarketStatus}" Foreground="#495057" Margin="5,0,20,0"/>
+                    <TextBlock Text="📈 Items: " FontWeight="SemiBold" Foreground="#495057"/>
+                    <TextBlock Text="{Binding ItemCount}" Foreground="#495057" Margin="5,0,20,0"/>
+                    <TextBlock Text="🔄 Last Update: " FontWeight="SemiBold" Foreground="#495057"/>
+                    <TextBlock Text="{Binding LastUpdateTime}" Foreground="#495057" Margin="5,0,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Market Data Grid -->
+            <Border Grid.Row="1" Background="White" BorderBrush="#E9ECEF" BorderThickness="1" CornerRadius="4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Market Controls -->
+                    <Border Grid.Row="0" Background="#F8F9FA" Padding="15,10" CornerRadius="4" Margin="10,10,10,5">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Filters -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <ComboBox Width="120" Margin="0,0,10,0" SelectedIndex="0">
+                                    <ComboBoxItem Content="Все рынки" Tag="All"/>
+                                    <ComboBoxItem Content="Частные" Tag="PrivateStore"/>
+                                    <ComboBoxItem Content="Комиссии" Tag="Commission"/>
+                                    <ComboBoxItem Content="Мировой" Tag="WorldExchange"/>
+                                </ComboBox>
+
+                                <TextBox Width="200" Margin="0,0,10,0" Text="{Binding MarketWindow.SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                <!-- Tracking Checkboxes -->
+                                <StackPanel Orientation="Horizontal" Margin="10,0,10,0">
+                                    <CheckBox Content="🏪 Частные" 
+                                             IsChecked="{Binding MarketWindow.IsPrivateStoreTrackingEnabled}"
+                                             Margin="0,0,10,0"
+                                             VerticalAlignment="Center"/>
+                                    <CheckBox Content="💰 Комиссии" 
+                                             IsChecked="{Binding MarketWindow.IsCommissionTrackingEnabled}"
+                                             Margin="0,0,10,0"
+                                             VerticalAlignment="Center"/>
+                                    <CheckBox Content="🌍 Мировой" 
+                                             IsChecked="{Binding MarketWindow.IsWorldExchangeTrackingEnabled}"
+                                             Margin="0,0,10,0"
+                                             VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- Toggle Tracking Button -->
+                                <Button Content="{Binding MarketWindow.TrackingButtonText}"
+                                       Command="{Binding MarketWindow.ToggleTrackingCommand}"
+                                       Background="{Binding MarketWindow.IsTrackingActive, Converter={StaticResource BooleanToColorConverter}}"
+                                       Foreground="White"
+                                       Padding="15,8"
+                                       FontWeight="Bold"
+                                       Margin="10,0,0,0"/>
+
+                                <Button Content="🔄 Обновить" 
+                                       Command="{Binding MarketWindow.RefreshCommand}"
+                                       Background="#007BFF" 
+                                       Foreground="White"
+                                       Padding="10,5"/>
+                            </StackPanel>
+
+                            <!-- Statistics -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <TextBlock Text="📊 Предметов: " VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Text="{Binding MarketWindow.TotalItems}" 
+                                          FontWeight="Bold" 
+                                          VerticalAlignment="Center" 
+                                          Margin="0,0,15,0"/>
+                                <TextBlock Text="🕒 Обновлено: " VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Text="{Binding MarketWindow.LastUpdateTime}" 
+                                          FontWeight="Bold" 
+                                          VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- DataGrid with Market Items -->
+                    <DataGrid Grid.Row="1" 
+                             ItemsSource="{Binding MarketWindow.MarketItems}"
+                             Margin="10,5,10,10"
+                             Background="White"
+                             BorderBrush="#E9ECEF"
+                             BorderThickness="1"
+                             GridLinesVisibility="Horizontal"
+                             HeadersVisibility="Column"
+                             CanUserAddRows="False"
+                             CanUserDeleteRows="False"
+                             IsReadOnly="True"
+                             AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Название" 
+                                              Binding="{Binding ItemName}" 
+                                              Width="120"/>
+                            <DataGridTextColumn Header="Цена" 
+                                              Binding="{Binding FormattedPrice}" 
+                                              Width="80"/>
+                            <DataGridTextColumn Header="Кол-во" 
+                                              Binding="{Binding Count}" 
+                                              Width="60"/>
+                            <DataGridTextColumn Header="Продавец" 
+                                              Binding="{Binding SellerName}" 
+                                              Width="100"/>
+                            <DataGridTextColumn Header="Тип" 
+                                              Binding="{Binding MarketTypeIcon}" 
+                                              Width="50"/>
+                            <DataGridTextColumn Header="Тип предмета" 
+                                              Binding="{Binding AdditionalInfo}" 
+                                              Width="120"/>
+                            <DataGridTextColumn Header="Зачар" 
+                                              Binding="{Binding FormattedEnchantLevel}" 
+                                              Width="50"/>
+                            <DataGridTextColumn Header="Статус" 
+                                              Binding="{Binding StatusIcons}" 
+                                              Width="50"/>
+                            <DataGridTextColumn Header="Координаты" 
+                                              Binding="{Binding FormattedCoordinates}" 
+                                              Width="100"/>
+                            <DataGridTextColumn Header="Окончание" 
+                                              Binding="{Binding FormattedEndTime}" 
+                                              Width="100"/>
+                            <DataGridTextColumn Header="Атака" 
+                                              Binding="{Binding FormattedAttackAttribute}" 
+                                              Width="100"/>
+                            <DataGridTextColumn Header="Защита" 
+                                              Binding="{Binding FormattedDefenceAttributes}" 
+                                              Width="120"/>
+                            <DataGridTextColumn Header="Душа" 
+                                              Binding="{Binding FormattedSoulCrystalInfo}" 
+                                              Width="120"/>
+                            <DataGridTextColumn Header="Аугментация" 
+                                              Binding="{Binding AugmentationInfo}" 
+                                              Width="100"/>
+                            <DataGridTextColumn Header="Стихии" 
+                                              Binding="{Binding ElementalAttrs}" 
+                                              Width="100"/>
+                            <DataGridTextColumn Header="Эффекты" 
+                                              Binding="{Binding EnchantEffects}" 
+                                              Width="100"/>
+                            <DataGridTextColumn Header="ID объекта" 
+                                              Binding="{Binding ObjectId}" 
+                                              Width="80"/>
+                            <DataGridTextColumn Header="Время" 
+                                              Binding="{Binding FormattedLastSeen}" 
+                                              Width="60"/>
+                            <DataGridTextColumn Header="До исчезновения" 
+                                              Binding="{Binding TimeUntilExpiry}" 
+                                              Width="100"/>
+                            <DataGridTemplateColumn Header="Действия" Width="80">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="💰 Купить" 
+                                               Command="{Binding DataContext.MarketWindow.BuyItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                               CommandParameter="{Binding}"
+                                               Background="#DC3545" 
+                                               Foreground="White"
+                                               Padding="4,2"
+                                               FontSize="10"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

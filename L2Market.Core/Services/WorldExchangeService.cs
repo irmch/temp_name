@@ -15,7 +15,8 @@ namespace L2Market.Core.Services
     /// </summary>
     public class WorldExchangeService : IMarketService, IDisposable
     {
-        private readonly IEventBus _eventBus;
+        private readonly ILocalEventBus _eventBus;
+        private readonly uint _processId;
         private readonly ConcurrentDictionary<ulong, WorldExchangeItemInfo> _items;
         private readonly ConcurrentDictionary<int, HashSet<ulong>> _itemsByItemId;
         private readonly ConcurrentDictionary<int, HashSet<ulong>> _itemsByCategory;
@@ -26,9 +27,10 @@ namespace L2Market.Core.Services
         // Время жизни предмета без обновлений (15 минут для мирового обмена)
         private static readonly TimeSpan ItemLifetime = TimeSpan.FromMinutes(15);
 
-        public WorldExchangeService(IEventBus eventBus)
+        public WorldExchangeService(ILocalEventBus eventBus, uint processId = 0)
         {
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
+            _processId = processId;
             _items = new ConcurrentDictionary<ulong, WorldExchangeItemInfo>();
             _itemsByItemId = new ConcurrentDictionary<int, HashSet<ulong>>();
             _itemsByCategory = new ConcurrentDictionary<int, HashSet<ulong>>();
@@ -200,7 +202,7 @@ namespace L2Market.Core.Services
                 {
                     await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[WorldExchangeService] Removed {removedCount} expired items"));
                     // Публикуем событие об обновлении для UI
-                    await _eventBus.PublishAsync(new WorldExchangeUpdatedEvent(new List<WorldExchangeItemInfo>(), 0));
+                    await _eventBus.PublishAsync(new WorldExchangeUpdatedEvent(new List<WorldExchangeItemInfo>(), _processId));
                 }
             }
             catch (Exception ex)
@@ -413,20 +415,4 @@ namespace L2Market.Core.Services
         public double AverageEnchantLevel { get; set; }
     }
 
-    /// <summary>
-    /// Событие обновления мирового обмена
-    /// </summary>
-    public class WorldExchangeUpdatedEvent
-    {
-        public IReadOnlyList<WorldExchangeItemInfo> Items { get; }
-        public int? Category { get; }
-        public DateTime Timestamp { get; }
-
-        public WorldExchangeUpdatedEvent(IReadOnlyList<WorldExchangeItemInfo> items, int? category = null)
-        {
-            Items = items ?? throw new ArgumentNullException(nameof(items));
-            Category = category;
-            Timestamp = DateTime.UtcNow;
-        }
-    }
 }

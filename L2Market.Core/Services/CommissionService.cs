@@ -15,7 +15,8 @@ namespace L2Market.Core.Services
     /// </summary>
     public class CommissionService : IMarketService, IDisposable
     {
-        private readonly IEventBus _eventBus;
+        private readonly ILocalEventBus _eventBus;
+        private readonly uint _processId;
         private readonly ConcurrentDictionary<ulong, CommissionItem> _items;
         private readonly ConcurrentDictionary<int, HashSet<ulong>> _itemsByItemId;
         private readonly ConcurrentDictionary<ulong, DateTime> _itemLastSeen;
@@ -25,9 +26,10 @@ namespace L2Market.Core.Services
         // Время жизни предмета без обновлений (10 минут для комиссий)
         private static readonly TimeSpan ItemLifetime = TimeSpan.FromMinutes(10);
 
-        public CommissionService(IEventBus eventBus)
+        public CommissionService(ILocalEventBus eventBus, uint processId = 0)
         {
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
+            _processId = processId;
             _items = new ConcurrentDictionary<ulong, CommissionItem>();
             _itemsByItemId = new ConcurrentDictionary<int, HashSet<ulong>>();
             _itemLastSeen = new ConcurrentDictionary<ulong, DateTime>();
@@ -190,7 +192,7 @@ namespace L2Market.Core.Services
                 {
                     await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[CommissionService] Removed {removedCount} expired items"));
                     // Публикуем событие об обновлении для UI
-                    await _eventBus.PublishAsync(new CommissionUpdatedEvent(new List<CommissionItem>()));
+                    await _eventBus.PublishAsync(new CommissionUpdatedEvent(new List<CommissionItem>(), _processId));
                 }
             }
             catch (Exception ex)
@@ -373,18 +375,4 @@ namespace L2Market.Core.Services
         public int BlessedItems { get; set; }
     }
 
-    /// <summary>
-    /// Событие обновления комиссионного магазина
-    /// </summary>
-    public class CommissionUpdatedEvent
-    {
-        public IReadOnlyList<CommissionItem> Items { get; }
-        public DateTime Timestamp { get; }
-
-        public CommissionUpdatedEvent(IReadOnlyList<CommissionItem> items)
-        {
-            Items = items ?? throw new ArgumentNullException(nameof(items));
-            Timestamp = DateTime.UtcNow;
-        }
-    }
 }

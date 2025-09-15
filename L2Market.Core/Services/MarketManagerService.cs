@@ -15,13 +15,13 @@ namespace L2Market.Core.Services
         private readonly PrivateStoreService _privateStoreService;
         private readonly CommissionService _commissionService;
         private readonly WorldExchangeService _worldExchangeService;
-        private readonly IEventBus _eventBus;
+        private readonly ILocalEventBus _eventBus;
 
         public MarketManagerService(
             PrivateStoreService privateStoreService,
             CommissionService commissionService,
             WorldExchangeService worldExchangeService,
-            IEventBus eventBus)
+            ILocalEventBus eventBus)
         {
             _privateStoreService = privateStoreService ?? throw new ArgumentNullException(nameof(privateStoreService));
             _commissionService = commissionService ?? throw new ArgumentNullException(nameof(commissionService));

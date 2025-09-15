@@ -9,6 +9,7 @@ namespace L2Market.Domain.Events
     {
         public string DllPath { get; set; } = string.Empty;
         public string ProcessName { get; set; } = string.Empty;
+        public int ProcessId { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 }

@@ -42,6 +42,8 @@ namespace L2Market.Core.Services
             _packetParserService = packetParserService ?? throw new ArgumentNullException(nameof(packetParserService));
             _windowMonitorService = windowMonitorService ?? throw new ArgumentNullException(nameof(windowMonitorService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            
+            _logger.LogInformation("🚀 ApplicationService created as Singleton");
         }
 
         public async Task<WorkflowResult> ExecuteInjectionWorkflowAsync(string dllPath, string processName, CancellationToken cancellationToken = default)
@@ -112,6 +114,8 @@ namespace L2Market.Core.Services
                     StepName = "NamedPipeCreation",
                     Description = "Starting NamedPipe server..."
                 });
+                
+                // Start NamedPipe server for this process
                 await _namedPipeService.StartServerAsync((uint)result.ProcessId, cancellationToken);
 
                 // Step 2.5: Start packet parser service
@@ -120,6 +124,8 @@ namespace L2Market.Core.Services
                     StepName = "PacketParserStart",
                     Description = "Starting packet parser service..."
                 });
+                
+                // Start packet parser service
                 await _packetParserService.StartAsync(cancellationToken);
                 
                 // Test EventBus with a test message
@@ -308,6 +314,195 @@ namespace L2Market.Core.Services
         }
 
         /// <summary>
+        /// Executes injection workflow for a specific process
+        /// </summary>
+        public async Task<WorkflowResult> ExecuteInjectionForProcessAsync(int processId, string processName, CancellationToken cancellationToken = default)
+        {
+            var settings = _configurationService.Settings;
+            var startTime = DateTime.UtcNow;
+            var result = new WorkflowResult();
+
+            try
+            {
+                var dllPath = settings.Injection.DefaultDllPath;
+
+                _logger.LogInformation("Starting injection workflow for process: {ProcessName} (PID: {ProcessId}), DLL: {DllPath}", processName, processId, dllPath);
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"🚀 Starting injection workflow for process: {processName} (PID: {processId}), DLL: {dllPath}"));
+
+                if (string.IsNullOrWhiteSpace(dllPath))
+                {
+                    result.ErrorMessage = "DLL path not configured";
+                    _logger.LogError("DLL path not configured");
+                    await _eventBus.PublishAsync(new LogMessageReceivedEvent("❌ DLL path not configured"));
+                    return result;
+                }
+
+                // Publish workflow started event
+                await _eventBus.PublishAsync(new WorkflowStartedEvent
+                {
+                    DllPath = dllPath,
+                    ProcessName = processName,
+                    ProcessId = processId
+                });
+                
+                // Test EventBus with a test message
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[TEST] ApplicationService: Starting injection workflow for process {processId}"));
+
+                result.ProcessId = processId;
+                result.ProcessName = processName;
+                _logger.LogInformation("Process found: {ProcessName} (PID: {ProcessId})", processName, processId);
+
+                // Step 1: Wait for window class
+                await _eventBus.PublishAsync(new WorkflowStepStartedEvent
+                {
+                    StepName = "WindowClassWait",
+                    Description = "Waiting for window class 'l2UnrealWWindowsViewportWindow'..."
+                });
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent("⏳ WindowClassWait: Waiting for window class 'l2UnrealWWindowsViewportWindow'..."));
+
+                var windowFound = await _windowMonitorService.WaitForWindowClassAsync(processId, "l2UnrealWWindowsViewportWindow", 
+                    TimeSpan.FromSeconds(30), cancellationToken);
+                
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"⏳ WindowClassWait: Result = {windowFound}"));
+
+                if (!windowFound)
+                {
+                    result.ErrorMessage = "Window class not found within timeout";
+                    _logger.LogError("Window class 'l2UnrealWWindowsViewportWindow' not found for process {ProcessId}", processId);
+                    await _eventBus.PublishAsync(new WorkflowFailedEvent
+                    {
+                        DllPath = dllPath,
+                        ProcessName = processName,
+                        ProcessId = processId,
+                        ErrorMessage = result.ErrorMessage,
+                        Duration = DateTime.UtcNow - startTime
+                    });
+                    return result;
+                }
+
+                // Step 2: Wait 1 second after window class appears
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent("Window class found! Waiting 1 second before injection..."));
+                await Task.Delay(1000, cancellationToken);
+
+                // Step 3: Create NamedPipe server (runs in background)
+                await _eventBus.PublishAsync(new WorkflowStepStartedEvent
+                {
+                    StepName = "NamedPipeCreation",
+                    Description = "Starting NamedPipe server..."
+                });
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"🔧 NamedPipeCreation: Starting server for process {processId}"));
+                
+                await _namedPipeService.StartServerAsync((uint)processId, cancellationToken);
+                
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"🔧 NamedPipeCreation: Server started successfully"));
+
+                // Step 4: Start packet parser service
+                await _eventBus.PublishAsync(new WorkflowStepStartedEvent
+                {
+                    StepName = "PacketParserStart",
+                    Description = "Starting packet parser service..."
+                });
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"🔧 PacketParserStart: Starting packet parser service"));
+                
+                await _packetParserService.StartAsync(cancellationToken);
+                
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"🔧 PacketParserStart: Packet parser started successfully"));
+                
+                // Test EventBus with a test message
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent("[TEST] EventBus is working!"));
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[DEBUG] Process ID: {processId}, Pipe name will be: '{processId}'"));
+                
+                // Give NamedPipe server time to start
+                await Task.Delay(1000, cancellationToken);
+
+                // Step 5: Inject DLL (DLL will connect to running NamedPipe)
+                await _eventBus.PublishAsync(new WorkflowStepStartedEvent
+                {
+                    StepName = "DllInjection",
+                    Description = "Injecting DLL..."
+                });
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"🔧 DllInjection: Attempting to inject {dllPath} into process {processId}"));
+
+                var injectionResult = await _dllInjectionService.InjectDllAsync(dllPath, processId);
+                
+                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"🔧 DllInjection: Result = Success={injectionResult.Success}, Error={injectionResult.ErrorMessage}"));
+                
+                if (!injectionResult.Success)
+                {
+                    result.ErrorMessage = injectionResult.ErrorMessage;
+                    _logger.LogError("DLL injection failed: {Error}", injectionResult.ErrorMessage);
+                    await _eventBus.PublishAsync(new WorkflowFailedEvent
+                    {
+                        DllPath = dllPath,
+                        ProcessName = processName,
+                        ProcessId = processId,
+                        ErrorMessage = result.ErrorMessage,
+                        Duration = DateTime.UtcNow - startTime
+                    });
+                    return result;
+                }
+
+                // Step 6: Wait for NamedPipe connection
+                await _eventBus.PublishAsync(new WorkflowStepStartedEvent
+                {
+                    StepName = "NamedPipeConnection",
+                    Description = "Waiting for NamedPipe connection..."
+                });
+
+                var connectionTimeout = settings.NamedPipe.ConnectionTimeout;
+                var connected = await WaitForNamedPipeConnectionAsync(connectionTimeout, cancellationToken);
+
+                if (!connected)
+                {
+                    result.ErrorMessage = "NamedPipe connection failed";
+                    _logger.LogError("NamedPipe connection failed");
+                    await _eventBus.PublishAsync(new WorkflowFailedEvent
+                    {
+                        DllPath = dllPath,
+                        ProcessName = processName,
+                        ProcessId = processId,
+                        ErrorMessage = result.ErrorMessage,
+                        Duration = DateTime.UtcNow - startTime
+                    });
+                    return result;
+                }
+
+                // Success!
+                result.Success = true;
+                result.DllInjected = true;
+                result.NamedPipeConnected = true;
+                result.TotalDuration = DateTime.UtcNow - startTime;
+
+                _logger.LogInformation("Injection workflow completed successfully for process {ProcessId} in {Duration:F1}s", 
+                    processId, result.TotalDuration.TotalSeconds);
+
+                await _eventBus.PublishAsync(new WorkflowCompletedEvent
+                {
+                    DllPath = dllPath,
+                    ProcessName = processName,
+                    ProcessId = processId,
+                    Duration = result.TotalDuration
+                });
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.ErrorMessage = ex.Message;
+                _logger.LogError(ex, "Error in injection workflow for process {ProcessId}", processId);
+                await _eventBus.PublishAsync(new WorkflowFailedEvent
+                {
+                    DllPath = settings.Injection.DefaultDllPath,
+                    ProcessName = processName,
+                    ProcessId = processId,
+                    ErrorMessage = result.ErrorMessage,
+                    Duration = DateTime.UtcNow - startTime
+                });
+                return result;
+            }
+        }
+
+        /// <summary>
         /// Executes automatic injection workflow - finds process, waits for window class, starts NamedPipe, then injects
         /// </summary>
         public async Task<WorkflowResult> ExecuteAutomaticInjectionAsync(CancellationToken cancellationToken = default)
@@ -352,7 +547,7 @@ namespace L2Market.Core.Services
                     Description = "Searching for process continuously..."
                 });
 
-                ProcessSearchResult processResult = null;
+                ProcessSearchResult? processResult = null;
                 var processSearchTimeout = settings.Injection.ProcessSearchTimeout;
                 var processSearchStart = DateTime.UtcNow;
 

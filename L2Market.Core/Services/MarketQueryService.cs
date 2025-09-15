@@ -16,7 +16,7 @@ namespace L2Market.Core.Services
     /// </summary>
     public class MarketQueryService : IDisposable
     {
-        private readonly IEventBus _eventBus;
+        private readonly ILocalEventBus _eventBus;
         private readonly ICommandService _commandService;
         private readonly ILogger<MarketQueryService> _logger;
         private readonly Dictionary<MarketType, Timer> _trackingTimers;
@@ -24,7 +24,7 @@ namespace L2Market.Core.Services
         private readonly object _lockObject = new object();
 
         public MarketQueryService(
-            IEventBus eventBus,
+            ILocalEventBus eventBus,
             ICommandService commandService,
             ILogger<MarketQueryService> logger)
         {

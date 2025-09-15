@@ -1,6 +1,7 @@
 using L2Market.Core.Configuration;
 using L2Market.Core.Services;
 using L2Market.Domain.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -274,25 +275,19 @@ namespace L2Market.UI.ViewModels
                 var serviceProvider = System.Windows.Application.Current.Resources["ServiceProvider"] as IServiceProvider;
                 if (serviceProvider != null)
                 {
-                    var marketWindow = serviceProvider.GetService(typeof(Views.MarketWindow)) as Views.MarketWindow;
-                    if (marketWindow != null)
+                    var marketWindow = serviceProvider.GetRequiredService<Views.MarketWindow>();
+                    
+                    // Проверяем, не открыто ли уже окно
+                    if (marketWindow.Visibility == System.Windows.Visibility.Visible)
                     {
-                        // Проверяем, не открыто ли уже окно
-                        if (marketWindow.Visibility == System.Windows.Visibility.Visible)
-                        {
-                            marketWindow.Activate();
-                            return;
-                        }
-                        
-                        marketWindow.Show();
-                        marketWindow.WindowState = System.Windows.WindowState.Normal;
                         marketWindow.Activate();
-                        LogMessage("✅ Окно рынка открыто");
+                        return;
                     }
-                    else
-                    {
-                        LogMessage("❌ Не удалось создать окно рынка");
-                    }
+                    
+                    marketWindow.Show();
+                    marketWindow.WindowState = System.Windows.WindowState.Normal;
+                    marketWindow.Activate();
+                    LogMessage("✅ Окно рынка открыто");
                 }
                 else
                 {

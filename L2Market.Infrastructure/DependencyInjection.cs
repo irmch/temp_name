@@ -237,10 +237,10 @@ namespace L2Market.Infrastructure
             services.AddSingleton<IEventBus, InMemoryEventBus>();
             
             // Services
-            services.AddScoped<IDllInjector, DllInjector>();
-            services.AddScoped<IDllInjectionService, DllInjectionService>();
-            services.AddScoped<INamedPipeService, NamedPipeService>();
-            services.AddScoped<IWindowMonitorService, WindowMonitorService>();
+            services.AddSingleton<IDllInjector, DllInjector>();
+            services.AddSingleton<IDllInjectionService, DllInjectionService>();
+            services.AddSingleton<INamedPipeService, MultiNamedPipeService>();
+            services.AddSingleton<IWindowMonitorService, WindowMonitorService>();
             return services;
         }
     }

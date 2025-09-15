@@ -145,6 +145,10 @@ namespace L2Market.Core.Configuration
                     if (double.TryParse(value, out double readTimeout))
                         settings.ReadTimeout = TimeSpan.FromSeconds(readTimeout);
                     break;
+                case "buffersize":
+                    if (int.TryParse(value, out int bufferSize))
+                        settings.BufferSize = bufferSize;
+                    break;
                 case "servershutdowntimeout":
                     if (double.TryParse(value, out double serverShutdownTimeout))
                         settings.ServerShutdownTimeout = TimeSpan.FromSeconds(serverShutdownTimeout);

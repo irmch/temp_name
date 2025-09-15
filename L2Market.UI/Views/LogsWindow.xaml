@@ -1,0 +1,167 @@
+<Window x:Class="L2Market.UI.Views.LogsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="L2Market - Logs" 
+        Height="700" 
+        Width="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="#F8F9FA">
+    
+    <Window.Resources>
+        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#212529"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+        
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="4" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#6c757d" Padding="20,15">
+            <StackPanel>
+                <TextBlock Text="📋 Application Logs" 
+                           Style="{StaticResource HeaderTextStyle}" 
+                           Foreground="White"/>
+                <TextBlock Text="Real-time application logs and debug information" 
+                           FontSize="12" 
+                           Foreground="#E9ECEF" 
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Logs Content -->
+        <Grid Grid.Row="1" Margin="20">
+            <Border Background="White" BorderBrush="#E9ECEF" BorderThickness="1" CornerRadius="4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Log Header -->
+                    <Border Grid.Row="0" Background="#F8F9FA" BorderBrush="#E9ECEF" BorderThickness="0,0,0,1" Padding="15,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="📊 Log Entries" FontWeight="SemiBold" Foreground="#495057"/>
+                            <TextBlock Grid.Column="1" Text="{Binding LogCount, StringFormat='Total: {0}'}" 
+                                       FontSize="12" Foreground="#6C757D" Margin="20,0,0,0"/>
+                            
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button Content="🗑️ Clear" 
+                                       Command="{Binding ClearLogsCommand}"
+                                       Background="#dc3545" 
+                                       Foreground="White"
+                                       Style="{StaticResource ButtonStyle}"
+                                       Padding="10,5"
+                                       FontSize="12"/>
+                                <Button Content="💾 Save" 
+                                       Command="{Binding SaveLogsCommand}"
+                                       Background="#28a745" 
+                                       Foreground="White"
+                                       Style="{StaticResource ButtonStyle}"
+                                       Padding="10,5"
+                                       FontSize="12"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Logs ListView -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <ListView ItemsSource="{Binding LogEntries}" 
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                  ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                  Background="White">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="10,5" BorderBrush="#E9ECEF" BorderThickness="0,0,0,1">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Timestamp -->
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="{Binding Timestamp, StringFormat='HH:mm:ss.fff'}" 
+                                                       FontFamily="Consolas" 
+                                                       FontSize="11" 
+                                                       Foreground="#6C757D" 
+                                                       VerticalAlignment="Top"
+                                                       Margin="0,0,10,0"/>
+
+                                            <!-- Log Message -->
+                                            <TextBlock Grid.Column="1" 
+                                                       Text="{Binding Message}" 
+                                                       FontFamily="Consolas" 
+                                                       FontSize="11" 
+                                                       Foreground="{Binding TextColor}"
+                                                       TextWrapping="Wrap"
+                                                       VerticalAlignment="Top"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Action Buttons -->
+        <Border Grid.Row="2" Background="#F8F9FA" BorderBrush="#E9ECEF" BorderThickness="0,1,0,0" Padding="20,15">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="🔄 Refresh" 
+                       Command="{Binding RefreshCommand}"
+                       Background="#17a2b8" 
+                       Foreground="White"
+                       Style="{StaticResource ButtonStyle}"/>
+                <Button Content="📋 Auto Scroll" 
+                       Command="{Binding ToggleAutoScrollCommand}"
+                       Background="{Binding AutoScrollBackground}" 
+                       Foreground="White"
+                       Style="{StaticResource ButtonStyle}"/>
+                <Button Content="❌ Close" 
+                       Command="{Binding CloseCommand}"
+                       Background="#6c757d" 
+                       Foreground="White"
+                       Style="{StaticResource ButtonStyle}"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
