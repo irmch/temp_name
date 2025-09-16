@@ -6,8 +6,10 @@
         xmlns:converters="clr-namespace:L2Market.UI.Converters"
         mc:Ignorable="d"
         Title="L2Market - Market" 
-        Height="700" 
-        Width="1200"
+        Height="900" 
+        Width="1800"
+        MinWidth="1700"
+        MinHeight="700"
         WindowStartupLocation="CenterScreen"
         Background="#F8F9FA">
     
@@ -54,6 +56,11 @@
                               FontSize="16" 
                               Foreground="#ADB5BD" 
                               Margin="0,5,0,0"/>
+                    <TextBlock Text="{Binding PlayerName, StringFormat='Player: {0}'}" 
+                              FontSize="14" 
+                              Foreground="#28A745" 
+                              Margin="0,2,0,0"
+                              FontWeight="SemiBold"/>
                     <TextBlock Text="{Binding ConnectionInfo.WindowTitle}" 
                               FontSize="12" 
                               Foreground="#6C757D" 
@@ -119,6 +126,33 @@
                                     <ComboBoxItem Content="Мировой" Tag="WorldExchange"/>
                                 </ComboBox>
 
+                                <ComboBox x:Name="ServerComboBox" 
+                                         Width="120" 
+                                         Margin="0,0,10,0"
+                                         SelectedValue="{Binding MarketWindow.SelectedServer}"
+                                         SelectedValuePath="Tag">
+                                    <ComboBoxItem Content="Cadmus" Tag="Cadmus"/>
+                                    <ComboBoxItem Content="Airin" Tag="Airin"/>
+                                    <ComboBoxItem Content="Elcardia" Tag="Elcardia"/>
+                                    <ComboBoxItem Content="Hatos" Tag="Hatos"/>
+                                    <ComboBoxItem Content="LionelHunter" Tag="LionelHunter"/>
+                                    <ComboBoxItem Content="Faris" Tag="Faris"/>
+                                    <ComboBoxItem Content="Tarkai" Tag="Tarkai"/>
+                                    <ComboBoxItem Content="Gran Kain" Tag="Gran Kain"/>
+                                    <ComboBoxItem Content="Valakas" Tag="Valakas"/>
+                                    <ComboBoxItem Content="Antharas" Tag="Antharas"/>
+                                    <ComboBoxItem Content="Carneiar" Tag="Carneiar"/>
+                                    <ComboBoxItem Content="Peach" Tag="Peach"/>
+                                    <ComboBoxItem Content="Lilac" Tag="Lilac"/>
+                                    <ComboBoxItem Content="EVA1" Tag="EVA1"/>
+                                    <ComboBoxItem Content="EVA2" Tag="EVA2"/>
+                                    <ComboBoxItem Content="Amethyst" Tag="Amethyst"/>
+                                    <ComboBoxItem Content="Wolf" Tag="Wolf"/>
+                                    <ComboBoxItem Content="Wolf 2" Tag="Wolf 2"/>
+                                    <ComboBoxItem Content="Hindemith" Tag="Hindemith"/>
+                                    <ComboBoxItem Content="Shyeed" Tag="Shyeed"/>
+                                </ComboBox>
+
                                 <TextBox Width="200" Margin="0,0,10,0" Text="{Binding MarketWindow.SearchText, UpdateSourceTrigger=PropertyChanged}"/>
 
                                 <!-- Tracking Checkboxes -->
@@ -135,6 +169,12 @@
                                              IsChecked="{Binding MarketWindow.IsWorldExchangeTrackingEnabled}"
                                              Margin="0,0,10,0"
                                              VerticalAlignment="Center"/>
+                                    <CheckBox Content="🚀 Автостарт" 
+                                             IsChecked="{Binding AutoStartTracking}"
+                                             Margin="0,0,10,0"
+                                             VerticalAlignment="Center"
+                                             Foreground="#28A745"
+                                             FontWeight="SemiBold"/>
                                 </StackPanel>
 
                                 <!-- Toggle Tracking Button -->
@@ -149,6 +189,18 @@
                                 <Button Content="🔄 Обновить" 
                                        Command="{Binding MarketWindow.RefreshCommand}"
                                        Background="#007BFF" 
+                                       Foreground="White"
+                                       Padding="10,5"
+                                       Margin="10,0,5,0"/>
+                                <Button Content="📋 Логи" 
+                                       Command="{Binding OpenLogsCommand}"
+                                       Background="#6C757D" 
+                                       Foreground="White"
+                                       Padding="10,5"
+                                       Margin="0,0,5,0"/>
+                                <Button Content="💾 Сохранить профиль" 
+                                       Command="{Binding SaveProfileCommand}"
+                                       Background="#17A2B8" 
                                        Foreground="White"
                                        Padding="10,5"/>
                             </StackPanel>

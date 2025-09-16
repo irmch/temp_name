@@ -140,10 +140,10 @@ namespace L2Market.Infrastructure.NamedPipeServices
                 
                 if (tasks.Length > 0)
                 {
-                    await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Отправка команды: {hex.Length} символов"));
-                    await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Hex данные: {hex}"));
-                    await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] JSON команда: {jsonString}"));
-                    await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Base64 команда: {base64Command}"));
+                    // await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Отправка команды: {hex.Length} символов"));
+                    // await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Hex данные: {hex}"));
+                    // await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] JSON команда: {jsonString}"));
+                    // await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Base64 команда: {base64Command}"));
                     
                     await Task.WhenAll(tasks);
                     
@@ -184,10 +184,10 @@ namespace L2Market.Infrastructure.NamedPipeServices
                 byte[] jsonBytes = System.Text.Encoding.UTF8.GetBytes(jsonString);
                 string base64Command = Convert.ToBase64String(jsonBytes);
                 
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Отправка команды в ProcessId {processId}: {hex.Length} символов"));
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Hex данные: {hex}"));
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] JSON команда: {jsonString}"));
-                await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Base64 команда: {base64Command}"));
+                // await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Отправка команды в ProcessId {processId}: {hex.Length} символов"));
+                // await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Hex данные: {hex}"));
+                // await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] JSON команда: {jsonString}"));
+                // await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Base64 команда: {base64Command}"));
                 
                 await connection.Writer.WriteLineAsync(base64Command);
                 
@@ -326,19 +326,19 @@ namespace L2Market.Infrastructure.NamedPipeServices
                                 
                                 if (!string.IsNullOrWhiteSpace(line))
                                 {
-                                    _logger.LogDebug("MultiNamedPipeService received data: {Data}", line);
-                                    await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Received: {line}"));
+                                    // _logger.LogDebug("MultiNamedPipeService received data: {Data}", line);
+                                    // await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Received: {line}"));
                                     
                                     // Send event for packet parsing with ProcessId
                                     await _eventBus.PublishAsync(new PipeDataReceivedEvent(line, "NamedPipe", ProcessId));
                                     
                                     // Show statistics every 100 messages
-                                    if (messageCount % 100 == 0)
-                                    {
-                                        var elapsed = DateTime.Now - startTime;
-                                        _logger.LogDebug("Statistics: Total={MessageCount}, Time={Elapsed}s", messageCount, elapsed.TotalSeconds);
-                                        await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Statistics: Total={messageCount}, Time={elapsed.TotalSeconds:F1}s"));
-                                    }
+                                    // if (messageCount % 100 == 0)
+                                    // {
+                                    //     var elapsed = DateTime.Now - startTime;
+                                    //     _logger.LogDebug("Statistics: Total={MessageCount}, Time={Elapsed}s", messageCount, elapsed.TotalSeconds);
+                                    //     await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Statistics: Total={messageCount}, Time={elapsed.TotalSeconds:F1}s"));
+                                    // }
                                 }
                             }
                             catch (IOException ex)
@@ -396,7 +396,7 @@ namespace L2Market.Infrastructure.NamedPipeServices
                         // Final statistics
                         var totalElapsed = DateTime.Now - startTime;
                         _logger.LogInformation("Connection closed. Final statistics: Total={MessageCount}, Time={Elapsed}s", messageCount, totalElapsed.TotalSeconds);
-                        await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Connection closed. Final statistics: Total={messageCount}, Time={totalElapsed.TotalSeconds:F1}s"));
+                        // await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MultiNamedPipeService] Connection closed. Final statistics: Total={messageCount}, Time={totalElapsed.TotalSeconds:F1}s"));
                         
                         Writer = null;
                         IsConnected = false;

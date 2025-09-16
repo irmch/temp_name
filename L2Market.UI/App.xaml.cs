@@ -44,6 +44,9 @@ namespace L2Market.UI
             _ = _serviceProvider.GetRequiredService<TrackingService>();
             _ = _serviceProvider.GetRequiredService<NotificationService>();
             
+            // Force creation of ConnectionEventRouter to subscribe to global EventBus
+            _ = _serviceProvider.GetRequiredService<ConnectionEventRouter>();
+            
             // MarketWindowViewModel will be created when MarketWindow is opened
 
             // Create and show connections window

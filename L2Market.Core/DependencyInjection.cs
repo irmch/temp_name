@@ -29,6 +29,7 @@ namespace L2Market.Core
             // Register tracking services
             services.AddSingleton<TrackingService>();
             services.AddSingleton<NotificationService>();
+            services.AddSingleton<ProfileService>();
             services.AddScoped<MarketQueryService>(); // Scoped for each connection
             
             // Register command service - will be created per connection

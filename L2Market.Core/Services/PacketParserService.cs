@@ -3,9 +3,12 @@ using System.Text.Json.Nodes;
 using L2Market.Core.Models;
 using L2Market.Domain.Common;
 using L2Market.Domain.Events;
+using GamePacket = L2Market.Core.Models.GamePacket;
+using BasicGamePacket = L2Market.Core.Models.BasicGamePacket;
 using L2Market.Domain.Entities.ExPrivateStoreSearchItemPacket;
 using L2Market.Domain.Entities.ExResponseCommissionListPacket;
 using L2Market.Domain.Entities.WorldExchangeItemListPacket;
+using L2Market.Domain.Entities.UserInfoPacket;
 using Microsoft.Extensions.Logging;
 
 namespace L2Market.Core.Services
@@ -31,18 +34,22 @@ namespace L2Market.Core.Services
             // Подписываемся на события получения данных от NamedPipe
             _localEventBus.Subscribe<PipeDataReceivedEvent>(async e =>
             {
-                _logger.LogDebug("PacketParserService received data: {Data}", e.Data);
-                await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received data: {e.Data}"));
+                _logger.LogInformation("PacketParserService received PipeDataReceivedEvent: {Data}", e.Data);
+                await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received PipeDataReceivedEvent: {e.Data}"));
                 
                 // Убираем проверку _isRunning - обрабатываем все пакеты
                 var packet = TryParsePacket(e.Data ?? string.Empty);
-                if (packet != null)
+                if (packet is not null)
                 {
                     _logger.LogDebug("PacketParserService parsed packet: {PacketType}", packet.GetType().Name);
                     await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Parsed packet: {packet.GetType().Name}"));
                     
-                    // Обрабатываем пакеты прямо здесь
-                    await ProcessPacket(packet);
+                // Логируем все пакеты для отладки
+                _logger.LogDebug("[PacketParserService] Processing packet - ID: 0x{Id:X2}, ExID: 0x{ExId:X2}, Direction: {Direction}, Size: {Size}", 
+                    packet.Id, packet.ExId ?? 0, packet.Direction, packet.Size);
+                
+                // Обрабатываем пакеты прямо здесь
+                await ProcessPacket(packet);
                 }
                 else
                 {
@@ -102,6 +109,10 @@ namespace L2Market.Core.Services
                 var size = obj["size"]?.GetValue<int>() ?? 0;
                 var dataHex = obj["data"]?.ToString() ?? "";
                 
+                // Логируем парсинг для отладки
+                _logger.LogDebug("[PacketParserService] Parsed JSON - ID: 0x{Id:X2}, ExID: 0x{ExId:X2}, Direction: {Direction}, Size: {Size}", 
+                    id, exid ?? 0, direction, size);
+                
                 // Convert hex string to byte array
                 var packetData = ConvertHexStringToBytes(dataHex);
 
@@ -147,33 +158,10 @@ namespace L2Market.Core.Services
         {
             try
             {
+                
                 // Process packets by ID and direction
                 switch (packet.Id)
                 {
-                    case 0x5F when packet.Direction == "S":
-                        await ProcessSkillListPacket(packet);
-                        break;
-                    case 0x48 when packet.Direction == "S":
-                        await ProcessMagicSkillUsePacket(packet);
-                        break;
-                    case 0x39 when packet.Direction == "C":
-                        await ProcessRequestMagicSkillUsePacket(packet);
-                        break;
-                    case 0x56 when packet.Direction == "C":
-                        await ProcessRequestActionUsePacket(packet);
-                        break;
-                    case 0x0C when packet.Direction == "S":
-                        await ProcessNpcInfoPacket(packet);
-                        break;
-                    case 0x08 when packet.Direction == "S":
-                        await ProcessDeleteObjectPacket(packet);
-                        break;
-                    case 0x00 when packet.Direction == "S":
-                        await ProcessDiePacket(packet);
-                        break;
-                    case 0x59 when packet.Direction == "C":
-                        await ProcessValidatePositionPacket(packet);
-                        break;
                     // Market packets
                     case 0x27 when packet.Direction == "S": // 39 - ExPrivateStoreSearchItemPacket
                         await ProcessPrivateStoreSearchItemPacket(packet);
@@ -192,7 +180,8 @@ namespace L2Market.Core.Services
                         }
                         break;
                     case 0x32 when packet.Direction == "S":
-                        await ProcessCharInfoPacket(packet);
+                        _logger.LogInformation("[PacketParserService] Found UserInfo packet (0x32) - Size: {Size}", packet.Size);
+                        await ProcessUserInfoPacket(packet);
                         break;
                     case 0xFE when packet.ExId == 0x02D4 && packet.Direction == "S":
                         await ProcessExPrivateStoreSearchItemPacket(packet);
@@ -212,54 +201,6 @@ namespace L2Market.Core.Services
             {
                 await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Error processing packet {packet.FullId}: {ex.Message}"));
             }
-        }
-
-        #region Packet Processing Methods
-
-        private async Task ProcessSkillListPacket(GamePacket packet)
-        {
-            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received skill list packet (0x5F)"));
-        }
-
-        private async Task ProcessMagicSkillUsePacket(GamePacket packet)
-        {
-            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received magic skill use packet (0x48)"));
-        }
-
-        private async Task ProcessRequestMagicSkillUsePacket(GamePacket packet)
-        {
-            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received request magic skill use packet (0x39)"));
-        }
-
-        private async Task ProcessRequestActionUsePacket(GamePacket packet)
-        {
-            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received request action use packet (0x56)"));
-        }
-
-        private async Task ProcessNpcInfoPacket(GamePacket packet)
-        {
-            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received NPC info packet (0x0C)"));
-        }
-
-        private async Task ProcessDeleteObjectPacket(GamePacket packet)
-        {
-            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received delete object packet (0x08)"));
-        }
-
-        private async Task ProcessDiePacket(GamePacket packet)
-        {
-            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received die packet (0x00)"));
-        }
-
-        private async Task ProcessValidatePositionPacket(GamePacket packet)
-        {
-            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Received validate position packet (0x59)"));
-        }
-
-        private Task ProcessCharInfoPacket(GamePacket packet)
-        {
-            // Character info packet processed silently
-            return Task.CompletedTask;
         }
 
         private async Task ProcessExPrivateStoreSearchItemPacket(GamePacket packet)
@@ -331,7 +272,35 @@ namespace L2Market.Core.Services
             await ProcessExResponseCommissionListPacket(packet);
         }
 
-        #endregion
+        private async Task ProcessUserInfoPacket(GamePacket packet)
+        {
+            try
+            {
+                // Парсим UserInfoPacket из данных
+                var userInfoPacket = UserInfoPacket.FromBytes(packet.Data);
+                
+                // Извлекаем только ник игрока
+                if (userInfoPacket.Components.TryGetValue(UserInfoType.BASIC_INFO, out var basicInfo))
+                {
+                    // Получаем имя из анонимного объекта
+                    var nameProperty = basicInfo.GetType().GetProperty("Name");
+                    if (nameProperty != null)
+                    {
+                        var playerName = nameProperty.GetValue(basicInfo)?.ToString();
+                        if (!string.IsNullOrEmpty(playerName))
+                        {
+                            _logger.LogInformation("[PacketParserService] Player name: {PlayerName}", playerName);
+                            await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Player: {playerName}"));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[PacketParserService] Error processing UserInfo packet");
+                await _localEventBus.PublishAsync(new LogMessageReceivedEvent($"[PacketParserService] Error processing UserInfo packet: {ex.Message}"));
+            }
+        }
 
     }
 }

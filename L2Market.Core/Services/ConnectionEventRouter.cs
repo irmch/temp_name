@@ -25,7 +25,8 @@ namespace L2Market.Core.Services
             _globalEventBus.Subscribe<PipeDataReceivedEvent>(HandlePipeDataReceivedEvent);
             // Other events are now published directly to LocalEventBus, no routing needed
 
-            _logger.LogInformation("ConnectionEventRouter initialized and subscribed to global events.");
+            _logger.LogInformation("🚀 ConnectionEventRouter initialized and subscribed to global events.");
+            _logger.LogInformation("🔗 ConnectionEventRouter is now listening for PipeDataReceivedEvent on global EventBus");
         }
 
         public void RegisterConnection(uint processId, ILocalEventBus localEventBus)
@@ -42,13 +43,15 @@ namespace L2Market.Core.Services
 
         private async Task HandlePipeDataReceivedEvent(PipeDataReceivedEvent globalEvent)
         {
+            _logger.LogInformation("ConnectionEventRouter received PipeDataReceivedEvent with ProcessId: {ProcessId}", globalEvent.ProcessId);
+            
             // Route to specific LocalEventBus based on ProcessId
             if (globalEvent.ProcessId.HasValue && _localEventBuses.TryGetValue(globalEvent.ProcessId.Value, out var localBus))
             {
                 try
                 {
                     await localBus.PublishAsync(globalEvent);
-                    _logger.LogDebug("Routed PipeDataReceivedEvent to LocalEventBus for ProcessId {ProcessId}", globalEvent.ProcessId.Value);
+                    _logger.LogInformation("Successfully routed PipeDataReceivedEvent to LocalEventBus for ProcessId {ProcessId}", globalEvent.ProcessId.Value);
                 }
                 catch (Exception ex)
                 {
@@ -57,7 +60,8 @@ namespace L2Market.Core.Services
             }
             else
             {
-                _logger.LogWarning("Could not route PipeDataReceivedEvent, ProcessId missing or LocalEventBus not found for ProcessId: {ProcessId}", globalEvent.ProcessId);
+                _logger.LogWarning("Could not route PipeDataReceivedEvent, ProcessId missing or LocalEventBus not found for ProcessId: {ProcessId}. Available buses: {AvailableBuses}", 
+                    globalEvent.ProcessId, string.Join(", ", _localEventBuses.Keys));
             }
         }
 

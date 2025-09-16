@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("L2Market.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+63622048321277277a7f545cbab35fd7105dac0b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d7dd9d9142577d85791341e9437f21f6662de6c0")]
 [assembly: System.Reflection.AssemblyProductAttribute("L2Market.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("L2Market.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

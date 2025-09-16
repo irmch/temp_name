@@ -24,6 +24,7 @@ namespace L2Market.UI.ViewModels
         private readonly Guid? _connectionId;
 
         private MarketType _selectedMarketType = MarketType.All;
+        private string _selectedServer = "Cadmus";
         private string _searchText = string.Empty;
         private bool _isRefreshing;
         private int _totalItems;
@@ -59,6 +60,7 @@ namespace L2Market.UI.ViewModels
 
             // Инициализация команд
             RefreshCommand = new RelayCommand(async () => await RefreshAsync());
+            StartTrackingCommand = new RelayCommand(() => StartTracking());
             AddRuleCommand = new RelayCommand(() => AddRule());
             EditRuleCommand = new RelayCommand<TrackingRule>(rule => EditRule(rule));
             DeleteRuleCommand = new RelayCommand<TrackingRule>(async rule => await DeleteRuleAsync(rule));
@@ -90,6 +92,7 @@ namespace L2Market.UI.ViewModels
         
         // Команды
         public RelayCommand RefreshCommand { get; }
+        public RelayCommand StartTrackingCommand { get; }
         public RelayCommand AddRuleCommand { get; }
         public RelayCommand<TrackingRule> EditRuleCommand { get; }
         public RelayCommand<TrackingRule> DeleteRuleCommand { get; }
@@ -105,6 +108,21 @@ namespace L2Market.UI.ViewModels
                 _selectedMarketType = value;
                 OnPropertyChanged(nameof(SelectedMarketType));
                 _ = Task.Run(async () => await RefreshAsync());
+            }
+        }
+
+        public string SelectedServer
+        {
+            get => _selectedServer;
+            set
+            {
+                if (_selectedServer != value)
+                {
+                    _selectedServer = value;
+                    OnPropertyChanged(nameof(SelectedServer));
+                    // Здесь можно добавить логику для смены сервера
+                    _ = Task.Run(async () => await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MarketWindowViewModel] SelectedServer changed to {value}")));
+                }
             }
         }
 
@@ -400,6 +418,31 @@ namespace L2Market.UI.ViewModels
             catch (Exception ex)
             {
                 await _eventBus.PublishAsync(new LogMessageReceivedEvent($"Error toggling tracking for {marketType}: {ex.Message}"));
+            }
+        }
+
+        /// <summary>
+        /// Запускает отслеживание
+        /// </summary>
+        private void StartTracking()
+        {
+            try
+            {
+                IsTrackingActive = true;
+                
+                // Запускаем отслеживание для отмеченных типов рынка
+                if (IsPrivateStoreTrackingEnabled)
+                    _marketQueryService.StartQuerying(MarketType.PrivateStore, TimeSpan.FromSeconds(30));
+                if (IsCommissionTrackingEnabled)
+                    _marketQueryService.StartQuerying(MarketType.Commission, TimeSpan.FromSeconds(30));
+                if (IsWorldExchangeTrackingEnabled)
+                    _marketQueryService.StartQuerying(MarketType.WorldExchange, TimeSpan.FromSeconds(30));
+                
+                _ = Task.Run(async () => await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MarketWindowViewModel] Tracking started for server: {SelectedServer}")));
+            }
+            catch (Exception ex)
+            {
+                _ = Task.Run(async () => await _eventBus.PublishAsync(new LogMessageReceivedEvent($"[MarketWindowViewModel] Error starting tracking: {ex.Message}")));
             }
         }
 

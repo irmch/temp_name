@@ -6,6 +6,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
+using L2Market.Core.Services;
+using L2Market.Domain.Common;
+using L2Market.Domain.Events;
 using Microsoft.Extensions.Logging;
 
 namespace L2Market.UI.ViewModels
@@ -16,12 +19,20 @@ namespace L2Market.UI.ViewModels
     public class LogsViewModel : INotifyPropertyChanged
     {
         private readonly ILogger<LogsViewModel> _logger;
+        private readonly ILocalEventBus? _localEventBus;
+        private readonly string _connectionName;
         private bool _autoScroll = true;
         private int _maxLogEntries = 1000;
 
-        public LogsViewModel(ILogger<LogsViewModel> logger)
+        public LogsViewModel(ILogger<LogsViewModel> logger) : this(logger, null, "Global")
+        {
+        }
+
+        public LogsViewModel(ILogger<LogsViewModel> logger, ILocalEventBus? localEventBus, string connectionName)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _localEventBus = localEventBus;
+            _connectionName = connectionName ?? "Unknown";
             
             LogEntries = new ObservableCollection<LogEntryViewModel>();
             
@@ -32,8 +43,14 @@ namespace L2Market.UI.ViewModels
             ToggleAutoScrollCommand = new RelayCommand(ToggleAutoScroll);
             CloseCommand = new RelayCommand(Close);
             
+            // Subscribe to local event bus if provided
+            if (_localEventBus != null)
+            {
+                _localEventBus.Subscribe<LogMessageReceivedEvent>(OnLogMessageReceived);
+            }
+            
             // Add initial test message
-            AddLogEntry("📋 Logs window initialized", "Information");
+            AddLogEntry($"📋 Logs window initialized for {_connectionName}", "Information");
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -168,6 +185,21 @@ namespace L2Market.UI.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error closing logs window");
+            }
+        }
+
+        private async Task OnLogMessageReceived(LogMessageReceivedEvent logEvent)
+        {
+            try
+            {
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    AddLogEntry(logEvent.Message, "Information");
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing log message from local event bus");
             }
         }
 
